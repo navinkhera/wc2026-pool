@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WC2026 Pool — Live Standings</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold:#f0c040;--silver:#c0c8d0;--bronze:#cd8c52;
+  --alive-glow:rgba(56,230,120,0.11);--alive-border:rgba(56,230,120,0.32);--alive-color:#38e678;
+  --elim-glow:rgba(255,255,255,0.02);--elim-border:rgba(255,255,255,0.05);
+  --ink:#07100a;--s0:rgba(255,255,255,0.03);--s1:rgba(255,255,255,0.06);--s2:rgba(255,255,255,0.10);
+  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.15);
+  --text:#eef4f0;--muted:rgba(238,244,240,0.38);--mono:'DM Mono',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh}
+.ambient{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 70% 40% at 50% -5%,rgba(13,92,46,0.5) 0%,transparent 65%),
+             radial-gradient(ellipse 50% 50% at 100% 100%,rgba(240,192,64,0.05) 0%,transparent 55%)}
+.noise{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0.025;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.page{position:relative;z-index:1;max-width:980px;margin:0 auto;padding:0 1.25rem 6rem}
+
+/* HEADER */
+.header{display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:1rem;padding:3rem 0 2rem;animation:fadeUp 0.7s ease both}
+.header-left h1{font-family:'Anton',sans-serif;font-size:clamp(2.5rem,8vw,5rem);line-height:0.9}
+.header-left h1 em{display:block;font-style:normal;-webkit-text-stroke:1px rgba(240,192,64,0.5);color:transparent}
+.header-sub{color:var(--muted);font-size:0.85rem;margin-top:0.5rem}
+.last-updated{text-align:right;font-family:var(--mono);font-size:0.65rem;color:var(--muted);line-height:1.9}
+.last-updated .ts{color:var(--gold);font-size:0.78rem}
+.live-dot{display:inline-block;width:7px;height:7px;background:#4dff88;border-radius:50%;margin-right:0.4rem;animation:livePulse 2s infinite;vertical-align:middle}
+@keyframes livePulse{0%,100%{box-shadow:0 0 0 0 rgba(77,255,136,0.4)}50%{box-shadow:0 0 0 5px rgba(77,255,136,0)}}
+
+/* STATS */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:0.75rem;margin-bottom:1.75rem;animation:fadeUp 0.7s 0.1s ease both}
+.stat-card{background:var(--s0);border:1px solid var(--border);border-radius:14px;padding:1rem;transition:background 0.2s}
+.stat-card:hover{background:var(--s1)}
+.sc-label{font-family:var(--mono);font-size:0.58rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);margin-bottom:0.35rem}
+.sc-value{font-family:'Anton',sans-serif;font-size:2rem;line-height:1}
+.sc-sub{font-size:0.7rem;color:var(--muted);margin-top:0.2rem}
+.stat-card.gold .sc-value{color:var(--gold)}
+.stat-card.alive-stat .sc-value{color:var(--alive-color)}
+.stat-card.elim-stat .sc-value{color:#ff7070}
+
+/* PRIZE BANNER */
+.prize-banner{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;
+  background:linear-gradient(135deg,rgba(240,192,64,0.08),rgba(13,92,46,0.12));
+  border:1px solid rgba(240,192,64,0.2);border-radius:16px;padding:1.25rem 1.5rem;
+  margin-bottom:1.75rem;animation:fadeUp 0.7s 0.15s ease both}
+.prize-left .plabel{font-family:var(--mono);font-size:0.62rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);margin-bottom:0.3rem}
+.prize-left .amount{font-family:'Anton',sans-serif;font-size:2.5rem;color:var(--gold);line-height:1}
+.prize-left .amount-sub{font-size:0.75rem;color:var(--muted);margin-top:0.2rem}
+.prize-right .plabel{font-family:var(--mono);font-size:0.62rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);margin-bottom:0.5rem}
+.prize-breakdown{display:flex;gap:0.5rem;flex-wrap:wrap;justify-content:flex-end}
+.prize-place{background:var(--s1);border:1px solid var(--border);border-radius:8px;padding:0.4rem 0.75rem;text-align:center}
+.prize-place .pl{font-family:var(--mono);font-size:0.55rem;color:var(--muted)}
+.prize-place .pa{font-family:'Anton',sans-serif;font-size:1rem}
+.prize-place.p1{border-color:rgba(240,192,64,0.3)}.prize-place.p1 .pa{color:var(--gold)}
+.prize-place.p2 .pa{color:var(--silver)}.prize-place.p3 .pa{color:var(--bronze)}
+
+/* 3RD PLACE RULE BANNER */
+.rule-banner{display:flex;align-items:center;gap:0.75rem;
+  background:rgba(205,140,82,0.08);border:1px solid rgba(205,140,82,0.25);
+  border-radius:10px;padding:0.7rem 1rem;margin-bottom:1.25rem;
+  font-size:0.78rem;color:rgba(205,140,82,0.9);
+  animation:fadeUp 0.7s 0.18s ease both;line-height:1.5}
+.rule-banner .ri{font-size:1.1rem;flex-shrink:0}
+
+/* ALIVE LEGEND */
+.alive-legend{display:flex;gap:0.6rem;margin-bottom:1.1rem;flex-wrap:wrap;animation:fadeUp 0.7s 0.2s ease both}
+.legend-pill{display:flex;align-items:center;gap:0.45rem;padding:0.32rem 0.8rem;border-radius:100px;font-size:0.7rem;font-family:var(--mono)}
+.legend-pill.alive{background:rgba(56,230,120,0.1);border:1px solid var(--alive-border);color:var(--alive-color)}
+.legend-pill.elim{background:var(--s0);border:1px solid var(--border);color:var(--muted)}
+.legend-pill.leader{background:rgba(240,192,64,0.1);border:1px solid rgba(240,192,64,0.3);color:var(--gold)}
+.legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.legend-pill.alive .legend-dot{background:var(--alive-color)}
+.legend-pill.elim .legend-dot{background:var(--muted)}
+.legend-pill.leader .legend-dot{background:var(--gold)}
+
+/* ELIM EXPLAINER */
+.elim-bar{display:flex;align-items:center;gap:0.6rem;
+  background:rgba(255,100,100,0.06);border:1px solid rgba(255,100,100,0.15);
+  border-radius:10px;padding:0.6rem 1rem;font-size:0.75rem;color:rgba(255,160,160,0.7);
+  margin-bottom:1rem;font-family:var(--mono);animation:fadeUp 0.7s 0.22s ease both}
+
+/* FILTERS */
+.filters{display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1.25rem;animation:fadeUp 0.7s 0.25s ease both}
+.filter-btn{background:var(--s0);border:1px solid var(--border);color:var(--muted);border-radius:8px;
+  font-family:var(--mono);font-size:0.65rem;letter-spacing:0.1em;padding:0.4rem 0.85rem;
+  cursor:pointer;transition:all 0.2s;text-transform:uppercase}
+.filter-btn:hover{background:var(--s1);color:var(--text)}
+.filter-btn.active{background:rgba(240,192,64,0.12);border-color:rgba(240,192,64,0.4);color:var(--gold)}
+.filter-btn.active-alive{background:rgba(56,230,120,0.1);border-color:var(--alive-border);color:var(--alive-color)}
+.search-wrap{position:relative;flex:1;min-width:160px;max-width:260px}
+.search-wrap input{width:100%;background:var(--s0);border:1px solid var(--border);border-radius:8px;
+  color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.82rem;
+  padding:0.4rem 0.85rem 0.4rem 2rem;outline:none;transition:border-color 0.2s}
+.search-wrap input:focus{border-color:var(--border2)}
+.search-wrap::before{content:'⌕';position:absolute;left:0.6rem;top:50%;transform:translateY(-50%);color:var(--muted);font-size:0.9rem;pointer-events:none}
+
+/* TABLE */
+.standings-wrap{animation:fadeUp 0.7s 0.3s ease both;overflow-x:auto}
+.standings-table{width:100%;border-collapse:separate;border-spacing:0 0.4rem;min-width:580px}
+.standings-table thead th{font-family:var(--mono);font-size:0.58rem;letter-spacing:0.18em;text-transform:uppercase;
+  color:var(--muted);padding:0 0.75rem 0.75rem;text-align:left;font-weight:400;white-space:nowrap}
+.standings-table thead th.num{text-align:right}
+.standings-table thead th.center{text-align:center}
+
+.entry-row{border-radius:12px;transition:transform 0.15s,box-shadow 0.2s,opacity 0.2s;cursor:default}
+.entry-row td{padding:0.85rem 0.75rem;vertical-align:middle}
+.entry-row td:first-child{border-radius:12px 0 0 12px;border-left:3px solid transparent}
+.entry-row td:last-child{border-radius:0 12px 12px 0}
+
+.entry-row.is-alive{background:var(--alive-glow);outline:1px solid var(--alive-border);animation:rowIn 0.4s ease both,aliveShimmer 3s 1s ease infinite}
+.entry-row.is-alive td:first-child{border-left-color:var(--alive-color)}
+.entry-row.is-alive:hover{transform:translateX(3px);box-shadow:0 0 24px rgba(56,230,120,0.1)}
+
+.entry-row.is-elim{background:var(--elim-glow);outline:1px solid var(--elim-border);opacity:0.5;animation:rowIn 0.4s ease both}
+.entry-row.is-elim:hover{transform:translateX(2px);opacity:0.72}
+
+.entry-row.is-leader{background:rgba(240,192,64,0.07)!important;outline:1px solid rgba(240,192,64,0.25)!important;animation:rowIn 0.4s ease both}
+.entry-row.is-leader td:first-child{border-left-color:var(--gold)!important}
+.entry-row.is-leader:hover{box-shadow:0 0 32px rgba(240,192,64,0.12)}
+
+@keyframes aliveShimmer{0%{box-shadow:0 0 0 rgba(56,230,120,0)}50%{box-shadow:0 0 20px rgba(56,230,120,0.13)}100%{box-shadow:0 0 0 rgba(56,230,120,0)}}
+
+/* RANK */
+.rank-cell{width:2.5rem;text-align:center}
+.rank-num{font-family:'Anton',sans-serif;font-size:1.1rem;color:var(--muted);
+  display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px}
+.r1 .rank-num{color:var(--ink);background:var(--gold)}
+.r2 .rank-num{color:var(--ink);background:var(--silver)}
+.r3 .rank-num{color:var(--ink);background:var(--bronze)}
+
+/* STATUS */
+.status-cell{text-align:center;width:2.6rem}
+.status-icon{font-size:1.2rem;line-height:1;filter:drop-shadow(0 0 5px rgba(56,230,120,0.4))}
+.is-elim .status-icon{filter:none;opacity:0.6}
+
+/* NAME */
+.name-cell .entry-name{font-weight:600;font-size:0.95rem}
+.is-elim .entry-name{color:var(--muted)}
+.name-cell .entry-id{font-family:var(--mono);font-size:0.62rem;color:var(--muted);margin-top:0.15rem}
+
+/* TEAMS */
+.teams-cell{max-width:260px}
+.team-tag{display:inline-flex;align-items:center;gap:0.25rem;
+  background:var(--s1);border:1px solid var(--border);
+  border-radius:5px;padding:0.12rem 0.45rem;margin:0.1rem 0.1rem 0.1rem 0;
+  font-family:var(--mono);font-size:0.62rem;white-space:nowrap;transition:background 0.15s;
+  cursor:default}
+.team-tag:hover{background:var(--s2)}
+.team-tag .tf{font-size:0.85em;line-height:1}
+.team-tag.elim-team{text-decoration:line-through;opacity:0.38}
+.team-tag.still-in{border-color:rgba(56,230,120,0.28);color:rgba(200,255,220,0.85)}
+.team-tag.pick1{border-color:rgba(240,192,64,0.38);color:var(--gold)}
+.team-tag.pick3rd{border-color:rgba(205,140,82,0.4);color:var(--bronze)}
+
+/* SCORES */
+.score-cell{text-align:right;white-space:nowrap}
+.actual-score{font-family:'Anton',sans-serif;font-size:1.5rem;line-height:1}
+.is-alive .actual-score,.is-alive.r1 .actual-score{color:var(--text)}
+.is-leader .actual-score{color:var(--gold)}
+.is-elim .actual-score{color:var(--muted)}
+.pts-label{font-family:var(--mono);font-size:0.58rem;color:var(--muted)}
+.gap-label{font-family:var(--mono);font-size:0.6rem;margin-top:0.15rem}
+.gap-label.closeable{color:rgba(56,230,120,0.75)}
+.gap-label.too-far{color:#ff7070}
+.gap-label.leading{color:var(--gold);font-size:0.65rem}
+
+.potential-cell{text-align:right;white-space:nowrap}
+.potential-val{font-family:var(--mono);font-size:0.85rem}
+.is-alive .potential-val{color:var(--alive-color)}
+.is-elim .potential-val{color:var(--muted);text-decoration:line-through}
+
+/* 3RD PLACE BONUS BADGE */
+.bonus-badge{display:inline-flex;align-items:center;gap:0.2rem;
+  background:rgba(205,140,82,0.15);border:1px solid rgba(205,140,82,0.35);
+  border-radius:4px;padding:0.08rem 0.35rem;
+  font-family:var(--mono);font-size:0.58rem;color:var(--bronze);
+  margin-left:0.3rem;vertical-align:middle}
+
+/* EMPTY */
+.empty-state{text-align:center;padding:4rem 1rem;color:var(--muted);display:none}
+.empty-state .icon{font-size:3rem;margin-bottom:1rem;opacity:0.4}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes rowIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
+
+@media(max-width:640px){
+  .stats-row{grid-template-columns:repeat(2,1fr)}
+  .teams-cell{display:none}
+  .prize-right{display:none}
+  .header{padding-top:2rem}
+}
+</style>
+</head>
+<body>
+<div class="ambient"></div>
+<div class="noise"></div>
+<div class="page">
+
+  <div class="header">
+    <div class="header-left">
+      <h1>LIVE<em>STANDINGS</em></h1>
+      <p class="header-sub">FIFA World Cup 2026 · Pool Leaderboard</p>
+    </div>
+    <div class="last-updated">
+      <div><span class="live-dot"></span>LAST UPDATED</div>
+      <div class="ts" id="lastUpdatedTime">—</div>
+      <div style="margin-top:0.25rem">Auto-refreshes every 5 min</div>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card gold">
+      <div class="sc-label">🏆 Prize Pot</div>
+      <div class="sc-value" id="statPot">—</div>
+      <div class="sc-sub" id="statPotSub">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="sc-label">Entries</div>
+      <div class="sc-value" id="statEntries">—</div>
+      <div class="sc-sub" id="statPaid">—</div>
+    </div>
+    <div class="stat-card alive-stat">
+      <div class="sc-label">🔥 Still Alive</div>
+      <div class="sc-value" id="statAlive">—</div>
+      <div class="sc-sub" id="statAliveSub">can still win</div>
+    </div>
+    <div class="stat-card elim-stat">
+      <div class="sc-label">💀 Eliminated</div>
+      <div class="sc-value" id="statElim">—</div>
+      <div class="sc-sub">mathematically out</div>
+    </div>
+  </div>
+
+  <div class="prize-banner">
+    <div class="prize-left">
+      <div class="plabel">💰 Current Prize Pot</div>
+      <div class="amount" id="prizeAmount">—</div>
+      <div class="amount-sub" id="prizeAmountSub">based on paid entries</div>
+    </div>
+    <div class="prize-right">
+      <div class="plabel">Prize breakdown</div>
+      <div class="prize-breakdown">
+        <div class="prize-place p1"><div class="pl">1st place</div><div class="pa" id="prize1">—</div></div>
+        <div class="prize-place p2"><div class="pl">2nd place</div><div class="pa" id="prize2">—</div></div>
+        <div class="prize-place p3"><div class="pl">3rd place</div><div class="pa" id="prize3">—</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="rule-banner">
+    <span class="ri">🥉</span>
+    <span><strong>3rd place bonus rule:</strong> If the 3rd place game winner is your <strong>Pick 3</strong>, you earn <strong>4 bonus points</strong> (half of the normal 8pt/win). All other picks earn nothing from the 3rd place game.</span>
+  </div>
+
+  <div class="alive-legend">
+    <div class="legend-pill leader"><div class="legend-dot"></div>👑 Current leader</div>
+    <div class="legend-pill alive"><div class="legend-dot"></div>🔥 Still alive — can win</div>
+    <div class="legend-pill elim"><div class="legend-dot"></div>💀 Mathematically eliminated</div>
+  </div>
+
+  <div class="elim-bar">
+    <span>ℹ️</span>
+    <span id="elimExplainer">An entry is eliminated when its maximum possible score can no longer beat the current leader's actual score.</span>
+  </div>
+
+  <div class="filters">
+    <button class="filter-btn active" onclick="setFilter('all',this)">All entries</button>
+    <button class="filter-btn" onclick="setFilter('alive',this)">🔥 Still alive</button>
+    <button class="filter-btn" onclick="setFilter('elim',this)">💀 Eliminated</button>
+    <div class="search-wrap">
+      <input type="text" id="searchInput" placeholder="Search by name…" oninput="renderTable()">
+    </div>
+  </div>
+
+  <div class="standings-wrap">
+    <table class="standings-table">
+      <thead>
+        <tr>
+          <th class="center">Rank</th>
+          <th class="center">Status</th>
+          <th>Entrant</th>
+          <th>Teams</th>
+          <th class="num">Score</th>
+          <th class="num">Max Possible</th>
+        </tr>
+      </thead>
+      <tbody id="standingsBody"></tbody>
+    </table>
+    <div class="empty-state" id="emptyState">
+      <div class="icon">🔍</div>
+      <p>No entries match your filter.</p>
+    </div>
+  </div>
+
+</div>
+<script>
+// ── CONFIG ────────────────────────────────────────────────────────────────────
+const STANDINGS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vShrmffhqCtYpQdrYUJUwDGHfFeRUAAgw9scgVMiJIEk2kobUvGK_HIn1Tf6xYbtmSrfdAzImOq_fB7/pub?gid=1226909377&single=true&output=csv';
+const ENTRY_FEE   = 100;
+const CURRENCY    = 'kr';
+const PRIZE_SPLIT = { first:50, second:30, third:20 };
+const REFRESH_MS  = 5 * 60 * 1000;
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Flag emoji map
+const FLAGS = {
+  'Argentina':'🇦🇷','Australia':'🇦🇺','Austria':'🇦🇹','Belgium':'🇧🇪','Bolivia':'🇧🇴',
+  'Brazil':'🇧🇷','Cameroon':'🇨🇲','Canada':'🇨🇦','Chile':'🇨🇱','China':'🇨🇳',
+  'Colombia':'🇨🇴','Costa Rica':'🇨🇷',"Côte d'Ivoire":'🇨🇮','Croatia':'🇭🇷',
+  'Czech Republic':'🇨🇿','Denmark':'🇩🇰','Ecuador':'🇪🇨','Egypt':'🇪🇬',
+  'El Salvador':'🇸🇻','England':'🏴󠁧󠁢󠁥󠁮󠁧󠁿','Estonia':'🇪🇪','Finland':'🇫🇮',
+  'France':'🇫🇷','Georgia':'🇬🇪','Germany':'🇩🇪','Ghana':'🇬🇭','Greece':'🇬🇷',
+  'Guatemala':'🇬🇹','Honduras':'🇭🇳','Hungary':'🇭🇺','Iceland':'🇮🇸',
+  'Indonesia':'🇮🇩','Iran':'🇮🇷','Iraq':'🇮🇶','Israel':'🇮🇱','Italy':'🇮🇹',
+  'Jamaica':'🇯🇲','Japan':'🇯🇵','Jordan':'🇯🇴','Kenya':'🇰🇪','Kuwait':'🇰🇼',
+  'Lithuania':'🇱🇹','Mali':'🇲🇱','Mexico':'🇲🇽','Morocco':'🇲🇦',
+  'Netherlands':'🇳🇱','New Zealand':'🇳🇿','Nigeria':'🇳🇬','Norway':'🇳🇴',
+  'Panama':'🇵🇦','Paraguay':'🇵🇾','Peru':'🇵🇪','Poland':'🇵🇱','Portugal':'🇵🇹',
+  'Qatar':'🇶🇦','Romania':'🇷🇴','Saudi Arabia':'🇸🇦','Scotland':'🏴󠁧󠁢󠁳󠁣󠁴󠁿',
+  'Senegal':'🇸🇳','Serbia':'🇷🇸','Slovakia':'🇸🇰','South Africa':'🇿🇦',
+  'South Korea':'🇰🇷','Spain':'🇪🇸','Sweden':'🇸🇪','Switzerland':'🇨🇭',
+  'Thailand':'🇹🇭','Trinidad & Tobago':'🇹🇹','Tunisia':'🇹🇳','Turkey':'🇹🇷',
+  'Ukraine':'🇺🇦','United States':'🇺🇸','Uruguay':'🇺🇾','Venezuela':'🇻🇪',
+  'Wales':'🏴󠁧󠁢󠁷󠁬󠁳󠁿','Zambia':'🇿🇲','Algeria':'🇩🇿','Albania':'🇦🇱',
+  'Armenia':'🇦🇲','Bahrain':'🇧🇭','Bulgaria':'🇧🇬',
+  "Bosnia & Herzegovina":'🇧🇦','Angola':'🇦🇴',
+};
+function flag(t){ return FLAGS[t]||'🏳️' }
+
+const PTS = [10,9,8,8,6,4,2,1];
+
+let allEntries = [];
+let currentFilter = 'all';
+
+// ── DEMO DATA ─────────────────────────────────────────────────────────────────
+const DEMO = [
+  { name:'Marcus L',  entryNum:'1', score:112, potential:112, paid:true,
+    teams:['Brazil','France','England','Argentina','Spain','Germany','Portugal','Netherlands'],
+    elimTeams:['England','Germany'], thirdPlaceWinner:'', thirdPlaceBonus:false },
+  { name:'Sofia B',   entryNum:'1', score:98,  potential:155, paid:true,
+    teams:['Argentina','Brazil','France','Spain','England','Netherlands','Germany','Portugal'],
+    elimTeams:['England','Germany'], thirdPlaceWinner:'France', thirdPlaceBonus:true },
+  { name:'Johan A',   entryNum:'2', score:95,  potential:148, paid:false,
+    teams:['France','Argentina','Spain','Brazil','Portugal','England','Netherlands','Germany'],
+    elimTeams:['England','Germany'], thirdPlaceWinner:'France', thirdPlaceBonus:false },
+  { name:'Emma K',    entryNum:'1', score:88,  potential:134, paid:true,
+    teams:['Spain','England','Brazil','France','Germany','Argentina','Portugal','Netherlands'],
+    elimTeams:['England','Germany'], thirdPlaceWinner:'France', thirdPlaceBonus:true },
+  { name:'Erik S',    entryNum:'1', score:79,  potential:110, paid:true,
+    teams:['England','Spain','Argentina','France','Netherlands','Brazil','Germany','Portugal'],
+    elimTeams:['England','Germany'], thirdPlaceWinner:'', thirdPlaceBonus:false },
+  { name:'Anna P',    entryNum:'1', score:71,  potential:108, paid:false,
+    teams:['Germany','Portugal','France','Brazil','Spain','England','Argentina','Netherlands'],
+    elimTeams:['England','Germany'], thirdPlaceWinner:'', thirdPlaceBonus:false },
+  { name:'Lena H',    entryNum:'1', score:65,  potential:91,  paid:true,
+    teams:['Netherlands','Germany','Brazil','England','France','Spain','Argentina','Portugal'],
+    elimTeams:['England','Germany'], thirdPlaceWinner:'', thirdPlaceBonus:false },
+  { name:'Björn M',   entryNum:'1', score:60,  potential:88,  paid:true,
+    teams:['Portugal','Netherlands','England','Germany','Brazil','France','Spain','Argentina'],
+    elimTeams:['England','Germany'], thirdPlaceWinner:'', thirdPlaceBonus:false },
+  { name:'Maja S',    entryNum:'1', score:55,  potential:80,  paid:true,
+    teams:['Croatia','Morocco','Japan','South Korea','United States','Senegal','Australia','Iran'],
+    elimTeams:['Iran'], thirdPlaceWinner:'', thirdPlaceBonus:false },
+  { name:'Oskar N',   entryNum:'1', score:48,  potential:70,  paid:false,
+    teams:['Germany','England','France','Brazil','Argentina','Spain','Portugal','Netherlands'],
+    elimTeams:['England','Germany'], thirdPlaceWinner:'', thirdPlaceBonus:false },
+  { name:'Frida W',   entryNum:'1', score:40,  potential:62,  paid:true,
+    teams:['Switzerland','Denmark','Poland','Serbia','Uruguay','Colombia','Chile','Peru'],
+    elimTeams:['Peru','Chile'], thirdPlaceWinner:'', thirdPlaceBonus:false },
+  { name:'Marcus L',  entryNum:'2', score:35,  potential:55,  paid:true,
+    teams:['Iran','Saudi Arabia','Qatar','Australia','Japan','South Korea','Morocco','Senegal'],
+    elimTeams:['Iran','Qatar','Saudi Arabia'], thirdPlaceWinner:'', thirdPlaceBonus:false },
+];
+
+function fmt(n){ return n.toLocaleString('sv-SE')+'\u00a0'+CURRENCY }
+
+function computeAlive(entries){
+  const sorted = [...entries].sort((a,b)=>b.score-a.score);
+  const leaderScore = sorted[0]?.score ?? 0;
+  return sorted.map((e,i)=>{
+    // Use MathElim from Sheet if available, otherwise calculate live
+    const sheetSaysElim = typeof e.mathElim === 'boolean' ? e.mathElim : null;
+    const calcElim = e.potential <= leaderScore;
+    const isElim = sheetSaysElim !== null ? sheetSaysElim : calcElim;
+    return {
+      ...e,
+      rank: i+1,
+      isLeader: i===0,
+      isAlive: i===0 || !isElim,
+      gap: leaderScore - e.score,
+      needed: leaderScore - e.potential,
+    };
+  });
+}
+
+function renderStats(entries){
+  const withAlive = computeAlive(entries);
+  const paid   = entries.filter(e=>e.paid).length;
+  const pot    = paid * ENTRY_FEE;
+  const alive  = withAlive.filter(e=>e.isAlive).length;
+  const elim   = withAlive.filter(e=>!e.isAlive).length;
+  const leader = withAlive[0];
+
+  document.getElementById('statPot').textContent     = fmt(pot);
+  document.getElementById('statPotSub').textContent  = `${paid} of ${entries.length} paid`;
+  document.getElementById('statEntries').textContent = entries.length;
+  document.getElementById('statPaid').textContent    = `${paid} paid · ${entries.length-paid} pending`;
+  document.getElementById('statAlive').textContent   = alive;
+  document.getElementById('statAliveSub').textContent= alive===1?'only one left!':'can still win';
+  document.getElementById('statElim').textContent    = elim;
+
+  document.getElementById('prizeAmount').textContent   = fmt(pot);
+  document.getElementById('prizeAmountSub').textContent= `${paid} paid entries × ${ENTRY_FEE} ${CURRENCY}`;
+  document.getElementById('prize1').textContent = fmt(Math.floor(pot*PRIZE_SPLIT.first/100));
+  document.getElementById('prize2').textContent = fmt(Math.floor(pot*PRIZE_SPLIT.second/100));
+  document.getElementById('prize3').textContent = fmt(Math.floor(pot*PRIZE_SPLIT.third/100));
+
+  if(leader){
+    document.getElementById('elimExplainer').textContent =
+      `An entry is eliminated when its maximum possible score can no longer beat the current leader's score of ${leader.score} pts (${leader.name}, Entry #${leader.entryNum}).`;
+  }
+}
+
+function renderTable(){
+  const q = (document.getElementById('searchInput').value||'').toLowerCase();
+  const withAlive = computeAlive(allEntries);
+  let rows = withAlive.filter(e=>{
+    if(currentFilter==='alive' && !e.isAlive) return false;
+    if(currentFilter==='elim'  &&  e.isAlive) return false;
+    if(currentFilter==='paid'  && !e.paid)    return false;
+    if(q && !e.name.toLowerCase().includes(q)) return false;
+    return true;
+  });
+
+  const body  = document.getElementById('standingsBody');
+  const empty = document.getElementById('emptyState');
+  if(!rows.length){ body.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display='none';
+
+  const medals=['🥇','🥈','🥉'];
+
+  body.innerHTML = rows.map((e,idx)=>{
+    const rc = e.rank<=3?`r${e.rank}`:'';
+    const stateClass = e.isLeader?'is-leader':e.isAlive?'is-alive':'is-elim';
+    const rankDisplay = e.rank<=3 ? medals[e.rank-1] : e.rank;
+    const statusIcon  = e.isLeader?'👑':e.isAlive?'🔥':'💀';
+
+    const teamTags = e.teams.map((t,i)=>{
+      const isElim = e.elimTeams?.includes(t);
+      const isPick1 = i===0;
+      const isPick3rd = i===2; // slot 3 = index 2 = 3rd place bonus slot
+      let cls = isElim ? 'elim-team' : 'still-in';
+      if(!isElim && isPick1) cls = 'pick1';
+      if(!isElim && isPick3rd && !isPick1) cls += ' pick3rd';
+      const bongeTag = (isPick3rd && e.thirdPlaceBonus && !isElim)
+        ? `<span class="bonus-badge">+4 🥉</span>` : '';
+      return `<span class="team-tag ${cls}" title="Pick ${i+1} · ${PTS[i]}pt/win${isElim?' · ELIMINATED':' · still in'}${isPick3rd?' · 3rd place bonus slot':''}">
+        <span class="tf">${flag(t)}</span>${t}</span>${bongeTag}`;
+    }).join('');
+
+    const gapText = e.isLeader
+      ? `<div class="gap-label leading">▲ Leading</div>`
+      : e.isAlive
+        ? `<div class="gap-label closeable">needs +${e.gap} to lead</div>`
+        : `<div class="gap-label too-far">out by ${Math.abs(e.needed)}</div>`;
+
+    const potDisplay = e.isAlive
+      ? `<div class="potential-val">${e.potential}</div><div class="gap-label closeable" style="text-align:right">ceiling</div>`
+      : `<div class="potential-val">${e.potential}</div><div class="gap-label too-far" style="text-align:right">max reached</div>`;
+
+    return `
+    <tr class="entry-row ${rc} ${stateClass}" style="animation-delay:${idx*0.035}s">
+      <td class="rank-cell"><span class="rank-num">${rankDisplay}</span></td>
+      <td class="status-cell"><span class="status-icon">${statusIcon}</span></td>
+      <td class="name-cell">
+        <div class="entry-name">${e.name}</div>
+        <div class="entry-id">Entry #${e.entryNum}</div>
+      </td>
+      <td class="teams-cell">${teamTags}</td>
+      <td class="score-cell">
+        <div class="actual-score">${e.score}</div>
+        <div class="pts-label">pts</div>
+        ${gapText}
+      </td>
+      <td class="potential-cell">${potDisplay}</td>
+    </tr>`;
+  }).join('');
+}
+
+function setFilter(f,btn){
+  currentFilter=f;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active','active-alive'));
+  btn.classList.add(f==='alive'?'active-alive':'active');
+  renderTable();
+}
+
+async function loadData(){
+  if(STANDINGS_CSV_URL==='YOUR_PUBLISHED_CSV_URL'){
+    allEntries=DEMO;
+    document.getElementById('lastUpdatedTime').textContent=
+      new Date().toLocaleString('sv-SE',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+    renderStats(DEMO); renderTable(); return;
+  }
+  try{
+    const r=await fetch(STANDINGS_CSV_URL+'&t='+Date.now());
+    const text=await r.text();
+    // CSV: Name,EntryNum,Score,Potential,Paid,Teams(/-sep),ElimTeams(/-sep),ThirdPlaceWinner
+    allEntries=text.trim().split('\n').slice(1).map(line=>{
+      const c=line.split(',').map(s=>s.replace(/^"|"$/g,'').trim());
+      const teams=(c[5]||'').split('/').map(t=>t.trim());
+      const thirdPlaceWinner=(c[7]||'').trim();
+      return{
+        name:c[0], entryNum:c[1],
+        score:parseInt(c[2])||0, potential:parseInt(c[3])||0,
+        paid:c[4]==='YES',
+        teams,
+        elimTeams:(c[6]||'').split('/').map(t=>t.trim()).filter(Boolean),
+        thirdPlaceWinner,
+        thirdPlaceBonus: thirdPlaceWinner!=='' && teams[2]===thirdPlaceWinner,
+      };
+    }).filter(e=>e.name);
+    document.getElementById('lastUpdatedTime').textContent=
+      new Date().toLocaleString('sv-SE',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+    renderStats(allEntries); renderTable();
+  }catch(err){console.error('Load failed',err)}
+}
+
+loadData();
+setInterval(loadData,REFRESH_MS);
+</script>
+</body>
+</html>

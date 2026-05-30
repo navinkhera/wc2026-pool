@@ -257,7 +257,7 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
 
   <div class="rule-banner">
     <span class="ri">🥉</span>
-    <span><strong>3rd place bonus rule:</strong> If the 3rd place game winner is your <strong>Pick 3</strong>, you earn <strong>4 bonus points</strong> (half of the normal 8pt/win). All other picks earn nothing from the 3rd place game.</span>
+    <span><strong>3rd place rule:</strong> If the 3rd place game winner is your <strong>Pick 3</strong>, you earn <strong>4 points</strong> for that win. The 3rd place game is worth 4pts — not the usual 8. All other picks score nothing from the 3rd place game.</span>
   </div>
 
   <div class="alive-legend">
@@ -306,32 +306,25 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
 const STANDINGS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vShrmffhqCtYpQdrYUJUwDGHfFeRUAAgw9scgVMiJIEk2kobUvGK_HIn1Tf6xYbtmSrfdAzImOq_fB7/pub?gid=1226909377&single=true&output=csv';
 const ENTRY_FEE   = 100;
 const CURRENCY    = 'kr';
-const PRIZE_SPLIT = { first:50, second:30, third:20 };
+const PRIZE_SPLIT = { first:75, second:20, third:5 };
 const REFRESH_MS  = 5 * 60 * 1000;
 // ─────────────────────────────────────────────────────────────────────────────
 
 // Flag emoji map
 const FLAGS = {
-  'Argentina':'🇦🇷','Australia':'🇦🇺','Austria':'🇦🇹','Belgium':'🇧🇪','Bolivia':'🇧🇴',
-  'Brazil':'🇧🇷','Cameroon':'🇨🇲','Canada':'🇨🇦','Chile':'🇨🇱','China':'🇨🇳',
-  'Colombia':'🇨🇴','Costa Rica':'🇨🇷',"Côte d'Ivoire":'🇨🇮','Croatia':'🇭🇷',
-  'Czech Republic':'🇨🇿','Denmark':'🇩🇰','Ecuador':'🇪🇨','Egypt':'🇪🇬',
-  'El Salvador':'🇸🇻','England':'🏴󠁧󠁢󠁥󠁮󠁧󠁿','Estonia':'🇪🇪','Finland':'🇫🇮',
-  'France':'🇫🇷','Georgia':'🇬🇪','Germany':'🇩🇪','Ghana':'🇬🇭','Greece':'🇬🇷',
-  'Guatemala':'🇬🇹','Honduras':'🇭🇳','Hungary':'🇭🇺','Iceland':'🇮🇸',
-  'Indonesia':'🇮🇩','Iran':'🇮🇷','Iraq':'🇮🇶','Israel':'🇮🇱','Italy':'🇮🇹',
-  'Jamaica':'🇯🇲','Japan':'🇯🇵','Jordan':'🇯🇴','Kenya':'🇰🇪','Kuwait':'🇰🇼',
-  'Lithuania':'🇱🇹','Mali':'🇲🇱','Mexico':'🇲🇽','Morocco':'🇲🇦',
-  'Netherlands':'🇳🇱','New Zealand':'🇳🇿','Nigeria':'🇳🇬','Norway':'🇳🇴',
-  'Panama':'🇵🇦','Paraguay':'🇵🇾','Peru':'🇵🇪','Poland':'🇵🇱','Portugal':'🇵🇹',
-  'Qatar':'🇶🇦','Romania':'🇷🇴','Saudi Arabia':'🇸🇦','Scotland':'🏴󠁧󠁢󠁳󠁣󠁴󠁿',
-  'Senegal':'🇸🇳','Serbia':'🇷🇸','Slovakia':'🇸🇰','South Africa':'🇿🇦',
-  'South Korea':'🇰🇷','Spain':'🇪🇸','Sweden':'🇸🇪','Switzerland':'🇨🇭',
-  'Thailand':'🇹🇭','Trinidad & Tobago':'🇹🇹','Tunisia':'🇹🇳','Turkey':'🇹🇷',
-  'Ukraine':'🇺🇦','United States':'🇺🇸','Uruguay':'🇺🇾','Venezuela':'🇻🇪',
-  'Wales':'🏴󠁧󠁢󠁷󠁬󠁳󠁿','Zambia':'🇿🇲','Algeria':'🇩🇿','Albania':'🇦🇱',
-  'Armenia':'🇦🇲','Bahrain':'🇧🇭','Bulgaria':'🇧🇬',
-  "Bosnia & Herzegovina":'🇧🇦','Angola':'🇦🇴',
+  'Algeria':'🇩🇿','Argentina':'🇦🇷','Australia':'🇦🇺','Austria':'🇦🇹',
+  'Belgium':'🇧🇪','Bosnia & Herzegovina':'🇧🇦','Brazil':'🇧🇷',
+  'Canada':'🇨🇦','Cape Verde':'🇨🇻','Colombia':'🇨🇴','Croatia':'🇭🇷',
+  'Curaçao':'🇨🇼','Czechia':'🇨🇿',"Côte d'Ivoire":'🇨🇮',
+  'DR Congo':'🇨🇩','Ecuador':'🇪🇨','Egypt':'🇪🇬','England':'🏴󠁧󠁢󠁥󠁮󠁧󠁿',
+  'France':'🇫🇷','Germany':'🇩🇪','Ghana':'🇬🇭','Haiti':'🇭🇹',
+  'Iran':'🇮🇷','Iraq':'🇮🇶','Japan':'🇯🇵','Jordan':'🇯🇴',
+  'Mexico':'🇲🇽','Morocco':'🇲🇦','Netherlands':'🇳🇱','New Zealand':'🇳🇿',
+  'Norway':'🇳🇴','Panama':'🇵🇦','Paraguay':'🇵🇾','Portugal':'🇵🇹',
+  'Qatar':'🇶🇦','Saudi Arabia':'🇸🇦','Scotland':'🏴󠁧󠁢󠁳󠁣󠁴󠁿','Senegal':'🇸🇳',
+  'South Africa':'🇿🇦','South Korea':'🇰🇷','Spain':'🇪🇸','Sweden':'🇸🇪',
+  'Switzerland':'🇨🇭','Tunisia':'🇹🇳','Türkiye':'🇹🇷',
+  'United States':'🇺🇸','Uruguay':'🇺🇾','Uzbekistan':'🇺🇿',
 };
 function flag(t){ return FLAGS[t]||'🏳️' }
 
@@ -504,10 +497,19 @@ function setFilter(f,btn){
 
 async function loadData(){
   if(STANDINGS_CSV_URL==='YOUR_PUBLISHED_CSV_URL'){
-    allEntries=DEMO;
-    document.getElementById('lastUpdatedTime').textContent=
-      new Date().toLocaleString('sv-SE',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
-    renderStats(DEMO); renderTable(); return;
+    // Not yet configured — show setup message
+    document.getElementById('lastUpdatedTime').textContent='Not connected';
+    document.getElementById('standingsBody').innerHTML = '';
+    document.getElementById('emptyState').style.display = 'block';
+    document.getElementById('emptyState').innerHTML = '<div class="icon">⚙️</div><p style="color:var(--muted);font-size:0.85rem">Standings not yet connected.<br>See setup guide to link your Google Sheet.</p>';
+    // Zero out stats
+    ['statPot','statEntries','statAlive','statElim','prizeAmount','prize1','prize2','prize3']
+      .forEach(id => { const el = document.getElementById(id); if(el) el.textContent = '—'; });
+    document.getElementById('statPotSub').textContent = 'awaiting entries';
+    document.getElementById('statPaid').textContent = '—';
+    document.getElementById('statAliveSub').textContent = '—';
+    document.getElementById('prizeAmountSub').textContent = 'no entries yet';
+    return;
   }
   try{
     const r=await fetch(STANDINGS_CSV_URL+'&t='+Date.now());

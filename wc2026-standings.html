@@ -142,9 +142,9 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
 .is-elim .status-icon{filter:none;opacity:0.6}
 
 /* NAME */
-.name-cell .entry-name{font-weight:600;font-size:0.95rem}
+.name-cell .entry-name{font-weight:700;font-size:1.1rem}
 .is-elim .entry-name{color:var(--muted)}
-.name-cell .entry-id{font-family:var(--mono);font-size:0.62rem;color:var(--muted);margin-top:0.15rem}
+.name-cell .entry-id{font-family:var(--mono);font-size:0.72rem;color:var(--muted);margin-top:0.2rem}
 
 /* TEAMS */
 .teams-cell{max-width:260px}
@@ -326,7 +326,12 @@ const FLAGS = {
   'Switzerland':'🇨🇭','Tunisia':'🇹🇳','Türkiye':'🇹🇷',
   'United States':'🇺🇸','Uruguay':'🇺🇾','Uzbekistan':'🇺🇿',
 };
-function flag(t){ return FLAGS[t]||'🏳️' }
+function cleanTeamName(t){
+  // Google Sheet/form values may arrive as "CD DR Congo" or "JO Jordan".
+  // Strip a leading 2-letter country code before looking up flags or displaying.
+  return (t||'').trim().replace(/^[A-Z]{2}\s+/, '').trim();
+}
+function flag(t){ return FLAGS[cleanTeamName(t)]||'' }
 
 const PTS = [10,9,8,8,6,4,2,1];
 
@@ -447,7 +452,8 @@ function renderTable(){
     const statusIcon  = e.isLeader?'👑':e.isAlive?'🔥':'💀';
 
     const teamTags = e.teams.map((t,i)=>{
-      const isElim = e.elimTeams?.includes(t);
+      const displayTeam = cleanTeamName(t);
+      const isElim = e.elimTeams?.map(cleanTeamName).includes(displayTeam);
       const isPick1 = i===0;
       const isPick3rd = i===2; // slot 3 = index 2 = 3rd place bonus slot
       let cls = isElim ? 'elim-team' : 'still-in';
@@ -456,7 +462,7 @@ function renderTable(){
       const bongeTag = (isPick3rd && e.thirdPlaceBonus && !isElim)
         ? `<span class="bonus-badge">+4 🥉</span>` : '';
       return `<span class="team-tag ${cls}" title="Pick ${i+1} · ${PTS[i]}pt/win${isElim?' · ELIMINATED':' · still in'}${isPick3rd?' · 3rd place bonus slot':''}">
-        <span class="tf">${flag(t)}</span>${t}</span>${bongeTag}`;
+        ${flag(t)} ${displayTeam}</span>${bongeTag}`;
     }).join('');
 
     const gapText = e.isLeader
@@ -495,6 +501,38 @@ function setFilter(f,btn){
   renderTable();
 }
 
+
+function parseCSV(text){
+  const rows=[]; let row=[]; let cur=''; let inQuotes=false;
+  for(let i=0;i<text.length;i++){
+    const ch=text[i], next=text[i+1];
+    if(ch==='"'){
+      if(inQuotes && next==='"'){ cur+='"'; i++; }
+      else inQuotes=!inQuotes;
+    } else if(ch===',' && !inQuotes){ row.push(cur); cur=''; }
+    else if((ch==='
+' || ch==='
+') && !inQuotes){
+      if(ch==='
+' && next==='
+') i++;
+      row.push(cur); cur='';
+      if(row.some(v=>String(v).trim()!=='')) rows.push(row);
+      row=[];
+    } else cur+=ch;
+  }
+  row.push(cur);
+  if(row.some(v=>String(v).trim()!=='')) rows.push(row);
+  return rows;
+}
+function cellByHeader(row, headers, names, fallbackIndex){
+  for(const name of names){
+    const idx=headers.findIndex(h=>h.toLowerCase().replace(/\s+/g,'')===name.toLowerCase().replace(/\s+/g,''));
+    if(idx>=0) return row[idx] || '';
+  }
+  return row[fallbackIndex] || '';
+}
+
 async function loadData(){
   if(STANDINGS_CSV_URL==='YOUR_PUBLISHED_CSV_URL'){
     // Not yet configured — show setup message
@@ -517,16 +555,18 @@ async function loadData(){
     // CSV: Name,EntryNum,Score,Potential,Paid,Teams(/-sep),ElimTeams(/-sep),ThirdPlaceWinner
     allEntries=text.trim().split('\n').slice(1).map(line=>{
       const c=line.split(',').map(s=>s.replace(/^"|"$/g,'').trim());
-      const teams=(c[5]||'').split('/').map(t=>t.trim());
-      const thirdPlaceWinner=(c[7]||'').trim();
+      // CSV: A=Rank(0), B=Name(1), C=Entry#(2), D=Score(3), E=Potential(4), F=Teams(5), G=ElimTeams(6), H=MathElim(7)
+      const teams=(c[5]||'').split('/').map(t=>t.trim()).filter(Boolean);
+      const mathElim=c[7]==='YES';
       return{
-        name:c[0], entryNum:c[1],
-        score:parseInt(c[2])||0, potential:parseInt(c[3])||0,
-        paid:c[4]==='YES',
+        name:c[1], entryNum:c[2],
+        score:parseInt(c[3])||0, potential:parseInt(c[4])||0,
+        paid:false,
         teams,
         elimTeams:(c[6]||'').split('/').map(t=>t.trim()).filter(Boolean),
-        thirdPlaceWinner,
-        thirdPlaceBonus: thirdPlaceWinner!=='' && teams[2]===thirdPlaceWinner,
+        mathElim,
+        thirdPlaceWinner:'',
+        thirdPlaceBonus:false,
       };
     }).filter(e=>e.name);
     document.getElementById('lastUpdatedTime').textContent=

@@ -87,6 +87,19 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
   border-radius:10px;padding:0.6rem 1rem;font-size:0.75rem;color:rgba(255,160,160,0.7);
   margin-bottom:1rem;font-family:var(--mono);animation:fadeUp 0.7s 0.22s ease both}
 
+
+/* CURRENT LEADER CARD */
+.leader-card{margin:1.25rem 0;padding:1.25rem 1.5rem;border-radius:18px;background:linear-gradient(135deg,rgba(240,192,64,.16),rgba(13,92,46,.12));border:1px solid rgba(240,192,64,.34);box-shadow:0 0 32px rgba(240,192,64,.06);animation:fadeUp .7s .24s ease both}
+.leader-kicker{font-family:var(--mono);font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:.75rem}
+.leader-main{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.leader-name{font-size:1.7rem;font-weight:700;line-height:1.1}
+.leader-entry{font-family:var(--mono);font-size:.75rem;color:var(--muted);margin-top:.25rem}
+.leader-stats{display:flex;gap:.75rem;flex-wrap:wrap}
+.leader-stats>div{min-width:110px;text-align:right;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:12px;padding:.65rem .8rem}
+.leader-stats span{display:block;font-family:'Anton',sans-serif;font-size:1.7rem;line-height:1;color:var(--gold)}
+.leader-stats small{display:block;margin-top:.2rem;font-family:var(--mono);font-size:.56rem;color:var(--muted);text-transform:uppercase}
+@media(max-width:640px){.leader-stats>div{text-align:left}}
+
 /* FILTERS */
 .filters{display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1.25rem;animation:fadeUp 0.7s 0.25s ease both}
 .filter-btn{background:var(--s0);border:1px solid var(--border);color:var(--muted);border-radius:8px;
@@ -272,6 +285,21 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
     <span id="elimExplainer">An entry is eliminated when its maximum possible score can no longer beat the current leader's actual score.</span>
   </div>
 
+
+  <div class="leader-card" id="leaderCard">
+    <div class="leader-kicker">🏆 Current Leader</div>
+    <div class="leader-main">
+      <div>
+        <div class="leader-name" id="leaderName">—</div>
+        <div class="leader-entry" id="leaderMeta">—</div>
+      </div>
+      <div class="leader-stats">
+        <div><span id="leaderScore">—</span><small>pts</small></div>
+        <div><span id="leaderPotential">—</span><small>max still achievable</small></div>
+      </div>
+    </div>
+  </div>
+
   <div class="filters">
     <button class="filter-btn active" onclick="setFilter('all',this)">All entries</button>
     <button class="filter-btn" onclick="setFilter('alive',this)">🔥 Still alive</button>
@@ -444,6 +472,33 @@ function computeAlive(entries){
   });
 }
 
+
+function updateLeaderCard(entries){
+  const withAlive = computeAlive(entries);
+  const leader = withAlive[0];
+  updateLeaderCard(entries);
+
+  const nameEl = document.getElementById('leaderName');
+  const metaEl = document.getElementById('leaderMeta');
+  const scoreEl = document.getElementById('leaderScore');
+  const potentialEl = document.getElementById('leaderPotential');
+
+  if(!leader){
+    if(nameEl) nameEl.textContent = '—';
+    if(metaEl) metaEl.textContent = 'No entries yet';
+    if(scoreEl) scoreEl.textContent = '—';
+    if(potentialEl) potentialEl.textContent = '—';
+    return;
+  }
+
+  const aliveTeams = (leader.teams || []).filter(t => !(leader.elimTeams || []).includes(t)).length;
+
+  if(nameEl) nameEl.textContent = leader.name;
+  if(metaEl) metaEl.textContent = `Entry #${leader.entryNum} • ${aliveTeams}/${(leader.teams || []).length} teams alive`;
+  if(scoreEl) scoreEl.textContent = leader.score;
+  if(potentialEl) potentialEl.textContent = leader.potential;
+}
+
 function renderStats(entries){
   const withAlive = computeAlive(entries);
   const paid   = entries.filter(e=>e.paid).length;
@@ -517,7 +572,7 @@ function renderTable(){
         : `<div class="gap-label too-far">out by ${Math.abs(e.needed)}</div>`;
 
     const potDisplay = e.isAlive
-      ? `<div class="potential-val">${e.potential}</div><div class="gap-label closeable" style="text-align:right">ceiling</div>`
+      ? `<div class="potential-val">${e.potential}</div><div class="gap-label closeable" style="text-align:right">max</div>`
       : `<div class="potential-val">${e.potential}</div><div class="gap-label too-far" style="text-align:right">max reached</div>`;
 
     return `

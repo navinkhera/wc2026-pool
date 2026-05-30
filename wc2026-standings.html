@@ -155,6 +155,7 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
   cursor:default}
 .team-tag:hover{background:var(--s2)}
 .team-tag .tf{font-size:0.85em;line-height:1}
+.flag-img{width:18px;height:13px;object-fit:cover;border-radius:2px;box-shadow:0 0 0 1px rgba(255,255,255,0.15);flex-shrink:0}
 .team-tag.elim-team{text-decoration:line-through;opacity:0.38}
 .team-tag.still-in{border-color:rgba(56,230,120,0.28);color:rgba(200,255,220,0.85)}
 .team-tag.pick1{border-color:rgba(240,192,64,0.38);color:var(--gold)}
@@ -310,61 +311,62 @@ const PRIZE_SPLIT = { first:75, second:20, third:5 };
 const REFRESH_MS  = 5 * 60 * 1000;
 // ─────────────────────────────────────────────────────────────────────────────
 
-// Flag emoji map
+// Flag image map. Uses FlagCDN images instead of emoji, avoiding GitHub/encoding issues.
 const FLAGS = {
-  'DR Congo':'🇨🇩',
-  'Jordan':'🇯🇴',
-  'Sweden':'\u{1F1F8}\u{1F1EA}',
-  'Canada':'🇨🇦',
-  'Brazil':'🇧🇷',
-  'Haiti':'🇭🇹',
-  'Germany':'🇩🇪',
-  'France':'🇫🇷',
+  'DR Congo':'cd',
+  'Jordan':'jo',
+  'Sweden':'se',
+  'Canada':'ca',
+  'Brazil':'br',
+  'Haiti':'ht',
+  'Germany':'de',
+  'France':'fr',
 
-  'Algeria':'🇩🇿',
-  'Argentina':'🇦🇷',
-  'Australia':'🇦🇺',
-  'Austria':'🇦🇹',
-  'Belgium':'🇧🇪',
-  'Bosnia & Herzegovina':'🇧🇦',
-  'Cape Verde':'🇨🇻',
-  'Colombia':'🇨🇴',
-  'Croatia':'🇭🇷',
-  'Curaçao':'🇨🇼',
-  'Czechia':'🇨🇿',
-  "Côte d'Ivoire":'🇨🇮',
-  'Ecuador':'🇪🇨',
-  'Egypt':'🇪🇬',
-  'England':'🏴',
-  'Ghana':'🇬🇭',
-  'Iran':'🇮🇷',
-  'Iraq':'🇮🇶',
-  'Japan':'🇯🇵',
-  'Mexico':'🇲🇽',
-  'Morocco':'🇲🇦',
-  'Netherlands':'🇳🇱',
-  'New Zealand':'🇳🇿',
-  'Norway':'🇳🇴',
-  'Panama':'🇵🇦',
-  'Paraguay':'🇵🇾',
-  'Portugal':'🇵🇹',
-  'Qatar':'🇶🇦',
-  'Saudi Arabia':'🇸🇦',
-  'Scotland':'🏴',
-  'Senegal':'🇸🇳',
-  'South Africa':'🇿🇦',
-  'South Korea':'🇰🇷',
-  'Spain':'🇪🇸',
-  'Switzerland':'🇨🇭',
-  'Tunisia':'🇹🇳',
-  'Türkiye':'🇹🇷',
-  'United States':'🇺🇸',
-  'Uruguay':'🇺🇾',
-  'Uzbekistan':'🇺🇿'
+  'Algeria':'dz',
+  'Argentina':'ar',
+  'Australia':'au',
+  'Austria':'at',
+  'Belgium':'be',
+  'Bosnia & Herzegovina':'ba',
+  'Cape Verde':'cv',
+  'Colombia':'co',
+  'Croatia':'hr',
+  'Curaçao':'cw',
+  'Czechia':'cz',
+  "Côte d'Ivoire":'ci',
+  'Ecuador':'ec',
+  'Egypt':'eg',
+  'Ghana':'gh',
+  'Iran':'ir',
+  'Iraq':'iq',
+  'Japan':'jp',
+  'Mexico':'mx',
+  'Morocco':'ma',
+  'Netherlands':'nl',
+  'New Zealand':'nz',
+  'Norway':'no',
+  'Panama':'pa',
+  'Paraguay':'py',
+  'Portugal':'pt',
+  'Qatar':'qa',
+  'Saudi Arabia':'sa',
+  'Senegal':'sn',
+  'South Africa':'za',
+  'South Korea':'kr',
+  'Spain':'es',
+  'Switzerland':'ch',
+  'Tunisia':'tn',
+  'Türkiye':'tr',
+  'United States':'us',
+  'Uruguay':'uy',
+  'Uzbekistan':'uz'
 };
 
 function flag(t){
-  return FLAGS[(t || '').trim()] || '';
+  const name = (t || '').trim();
+  const code = FLAGS[name];
+  if (!code) return '';
+  return `<img class="flag-img" src="https://flagcdn.com/24x18/${code}.png" srcset="https://flagcdn.com/48x36/${code}.png 2x" alt="${name} flag" loading="lazy">`;
 }
 
 const PTS = [10,9,8,8,6,4,2,1];

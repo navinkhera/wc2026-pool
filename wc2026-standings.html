@@ -331,6 +331,7 @@ function cleanTeamName(t){
 
   const mappings = {
     'CD DR Congo': 'DR Congo',
+    'DR Congo': 'DR Congo',
     'JO Jordan': 'Jordan',
     'SE Sweden': 'Sweden',
     'CA Canada': 'Canada',
@@ -342,11 +343,13 @@ function cleanTeamName(t){
 
   if (mappings[t]) return mappings[t];
 
-  // Strip a leading two-letter code only when what remains is a known team.
+  // Remove the two-letter form code only if the remaining value is a known team.
   const withoutCode = t.replace(/^[A-Z]{2}\s+/, '').trim();
-  return FLAGS[withoutCode] ? withoutCode : t;
+  if (FLAGS[withoutCode]) return withoutCode;
+
+  return t;
 }
-function flag(t){ return FLAGS[cleanTeamName(t)]||'' }
+function flag(t){ return FLAGS[cleanTeamName(t)] || '' }
 
 const PTS = [10,9,8,8,6,4,2,1];
 
@@ -477,7 +480,7 @@ function renderTable(){
       const bongeTag = (isPick3rd && e.thirdPlaceBonus && !isElim)
         ? `<span class="bonus-badge">+4 🥉</span>` : '';
       return `<span class="team-tag ${cls}" title="Pick ${i+1} · ${PTS[i]}pt/win${isElim?' · ELIMINATED':' · still in'}${isPick3rd?' · 3rd place bonus slot':''}">
-        ${flag(t)} ${displayTeam}</span>${bongeTag}`;
+        ${flag(displayTeam)} ${displayTeam}</span>${bongeTag}`;
     }).join('');
 
     const gapText = e.isLeader

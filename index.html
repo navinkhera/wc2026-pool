@@ -440,530 +440,91 @@ code { background: rgba(255,255,255,0.08); padding: 0.1em 0.4em; border-radius: 
   .pt-cell .v { font-size: 1.1rem; }
   .card { padding: 1.25rem; }
 }
-</style>
-</head>
-<body>
-<div class="ambient"></div>
-<div class="noise"></div>
-<div class="pitch-lines"></div>
 
-<!-- SUCCESS OVERLAY -->
-<div class="success-overlay" id="successOverlay">
-  <div class="big-emoji">⚽</div>
-  <h2>YOU'RE IN!</h2>
-  <p>Entry submitted successfully. Good luck — may your teams go all the way.</p>
-  <div class="entry-summary" id="entrySummary"></div>
-  <p style="color:var(--gold);font-size:0.82rem;margin-bottom:1.25rem">💳 Don't forget to pay your entry fee to be eligible for prizes</p>
-  <button class="again-btn" onclick="resetForm()">← Submit another entry</button>
-</div>
-
-<div class="wrap">
-
-  <header class="hero">
-    <div class="hero-eyebrow">FIFA World Cup 2026 · Pool</div>
-    <h1>PICK YOUR<span class="line2">SQUAD</span></h1>
-    <p class="hero-sub">Select 8 nations in order · Win points for every win · Glory to the top picker</p>
-  </header>
-
-  <div class="points-strip">
-    <div class="pt-cell top"><div class="n">Pick 1</div><div class="v">10</div><div class="u">pts/win</div></div>
-    <div class="pt-cell"><div class="n">Pick 2</div><div class="v">9</div><div class="u">pts/win</div></div>
-    <div class="pt-cell"><div class="n">3 &amp; 4</div><div class="v">8</div><div class="u">pts/win</div></div>
-    <div class="pt-cell"><div class="n">Pick 5</div><div class="v">6</div><div class="u">pts/win</div></div>
-    <div class="pt-cell"><div class="n">Pick 6</div><div class="v">4</div><div class="u">pts/win</div></div>
-    <div class="pt-cell"><div class="n">Pick 7</div><div class="v">2</div><div class="u">pts/win</div></div>
-    <div class="pt-cell"><div class="n">Pick 8</div><div class="v">1</div><div class="u">pts/win</div></div>
-  </div>
-
-  <div class="deadline">
-    <span class="icon">🔒</span>
-    <span>Entries lock before the first match kicks off. One entry fee per submission. Payment confirms your spot.</span>
-  </div>
-
-  <div class="setup-bar" id="setupBar">
-    <strong>⚙️ Admin setup required before sharing</strong>
-    Replace <code>YOUR_APPS_SCRIPT_URL</code> near the bottom of this file with your deployed Google Apps Script URL.
-    Also update the payment details in the fee note at the bottom. See the setup guide for full instructions.
-  </div>
-
-  <!-- DETAILS CARD -->
-  <div class="card" style="animation-delay:0.25s">
-    <div class="card-label">Your Details</div>
-    <div class="field">
-      <label>Full Name</label>
-      <input type="text" id="nameInput" placeholder="e.g. Marcus Lindström" autocomplete="name" oninput="clearError()">
-    </div>
-    <div class="field">
-      <label>Entry Number &nbsp;<span style="text-transform:none;letter-spacing:0;font-size:0.8em">(submitting multiple? number them 1, 2, 3…)</span></label>
-      <input type="text" id="entryInput" placeholder="1" value="1" oninput="clearError()">
-    </div>
-  </div>
-
-  <!-- TEAMS CARD -->
-  <div class="card" style="animation-delay:0.35s">
-    <div class="card-label">Your 8 Teams — In Ranked Order</div>
-    <div class="team-grid" id="teamGrid"></div>
-    <div class="progress-wrap">
-      <div class="progress-label">Teams selected <span id="progressCount">0 / 8</span></div>
-      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
-    </div>
-  </div>
-
-  <div class="msg error" id="errorMsg"></div>
-  <div class="msg success" id="successMsg"></div>
-
-  <div class="submit-wrap" style="animation: fadeUp 0.8s 0.5s ease both; opacity:0; animation-fill-mode:both">
-    <button class="submit-btn" id="submitBtn" onclick="handleSubmit(event)">
-      <span class="spin" id="spinner"></span>
-      SUBMIT ENTRY
-    </button>
-  </div>
-
-  <p class="fee-note">
-    Swish your entry fee to <strong>[Navin — 0706914536]</strong><br>
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WC2026 Pool — Enter Your Picks</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Anton&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-<style>
-:root {
-  --pitch: #0d5c2e;
-  --pitch-light: #127a3d;
-  --gold: #f0c040;
-  --gold-dim: #a8862a;
-  --red: #e03030;
-  --ink: #080f0a;
-  --surface: rgba(255,255,255,0.04);
-  --surface-hover: rgba(255,255,255,0.07);
-  --border: rgba(255,255,255,0.09);
-  --border-bright: rgba(255,255,255,0.2);
-  --text: #f0f4f1;
-  --muted: rgba(240,244,241,0.45);
-  --mono: 'DM Mono', monospace;
-}
-
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-html { scroll-behavior: smooth; }
-
-body {
-  background: var(--ink);
-  color: var(--text);
-  font-family: 'DM Sans', sans-serif;
-  min-height: 100vh;
-  overflow-x: hidden;
-}
-
-/* ── AMBIENT BACKGROUND ── */
-.ambient {
-  position: fixed; inset: 0; z-index: 0; pointer-events: none;
-  background:
-    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(13,92,46,0.55) 0%, transparent 70%),
-    radial-gradient(ellipse 40% 30% at 80% 110%, rgba(240,192,64,0.08) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 40% at -10% 60%, rgba(13,92,46,0.2) 0%, transparent 60%);
-}
-
-.noise {
-  position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.03;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-
-/* Pitch lines decoration */
-.pitch-lines {
-  position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.04;
-  background-image:
-    repeating-linear-gradient(0deg, transparent, transparent 59px, rgba(255,255,255,0.5) 59px, rgba(255,255,255,0.5) 60px);
-}
-
-.wrap {
-  position: relative; z-index: 1;
-  max-width: 700px;
-  margin: 0 auto;
-  padding: 0 1.25rem 6rem;
-}
-
-/* ── HERO ── */
-.hero {
-  text-align: center;
-  padding: 4rem 0 3rem;
-  animation: fadeUp 0.8s ease both;
-}
-
-.hero-eyebrow {
-  display: inline-flex; align-items: center; gap: 0.5rem;
-  font-family: var(--mono);
-  font-size: 0.7rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--gold);
-  background: rgba(240,192,64,0.1);
-  border: 1px solid rgba(240,192,64,0.25);
-  padding: 0.35rem 0.9rem;
-  border-radius: 100px;
-  margin-bottom: 1.5rem;
-}
-
-.hero-eyebrow::before { content: '●'; font-size: 0.5rem; animation: pulse 2s infinite; }
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
-
-h1 {
-  font-family: 'Anton', sans-serif;
-  font-size: clamp(3.5rem, 12vw, 7rem);
-  line-height: 0.9;
-  letter-spacing: -0.01em;
-  text-transform: uppercase;
-}
-
-h1 .line2 {
-  display: block;
-  -webkit-text-stroke: 1px rgba(240,192,64,0.6);
-  color: transparent;
-  font-size: clamp(4rem, 14vw, 8.5rem);
-}
-
-.hero-sub {
-  margin-top: 1.25rem;
-  color: var(--muted);
-  font-size: 0.95rem;
-  font-weight: 300;
-  letter-spacing: 0.03em;
-}
-
-/* ── POINTS STRIP ── */
-.points-strip {
-  display: flex;
-  gap: 0.4rem;
-  margin: 2rem 0;
-  animation: fadeUp 0.8s 0.15s ease both;
-}
-
-.pt-cell {
-  flex: 1;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  text-align: center;
-  padding: 0.6rem 0.2rem;
-  transition: background 0.2s, border-color 0.2s;
-  cursor: default;
-}
-.pt-cell:hover { background: var(--surface-hover); border-color: var(--border-bright); }
-.pt-cell .n { font-family: var(--mono); font-size: 0.58rem; color: var(--muted); margin-bottom: 0.2rem; }
-.pt-cell .v { font-family: 'Anton', sans-serif; font-size: 1.4rem; color: var(--gold); line-height: 1; }
-.pt-cell .u { font-size: 0.52rem; color: var(--muted); font-family: var(--mono); letter-spacing: 0.1em; }
-.pt-cell.top { border-color: rgba(240,192,64,0.3); background: rgba(240,192,64,0.06); }
-
-/* ── DEADLINE BANNER ── */
-.deadline {
-  display: flex; align-items: center; gap: 0.75rem;
-  background: rgba(224,48,48,0.08);
-  border: 1px solid rgba(224,48,48,0.25);
-  border-radius: 12px;
-  padding: 0.85rem 1.1rem;
-  margin-bottom: 2rem;
-  font-size: 0.82rem;
-  color: #ff8080;
-  animation: fadeUp 0.8s 0.2s ease both;
-}
-.deadline .icon { font-size: 1.1rem; flex-shrink: 0; }
-
-/* ── CARDS ── */
-.card {
-  background: var(--surface);
-  border: 1px solid var(--border);
+/* RULES CARD */
+.rules-card {
+  background: linear-gradient(135deg, rgba(240,192,64,0.06), rgba(13,92,46,0.08));
+  border: 1px solid rgba(240,192,64,0.2);
   border-radius: 20px;
   padding: 1.75rem;
   margin-bottom: 1rem;
-  animation: fadeUp 0.8s ease both;
-  backdrop-filter: blur(10px);
-}
-.card:nth-child(1) { animation-delay: 0.25s }
-.card:nth-child(2) { animation-delay: 0.35s }
-.card:nth-child(3) { animation-delay: 0.45s }
-
-.card-label {
-  font-family: var(--mono);
-  font-size: 0.65rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 1.25rem;
-  display: flex; align-items: center; gap: 0.6rem;
-}
-.card-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-
-/* ── INPUTS ── */
-.field { margin-bottom: 1rem; }
-.field label { display: block; font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.4rem; font-family: var(--mono); }
-
-input[type=text] {
-  width: 100%;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  color: var(--text);
-  font-family: 'DM Sans', sans-serif;
-  font-size: 1rem;
-  padding: 0.75rem 1rem;
-  outline: none;
-  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
-}
-input[type=text]:focus {
-  border-color: var(--pitch-light);
-  background: rgba(255,255,255,0.07);
-  box-shadow: 0 0 0 3px rgba(18,122,61,0.2);
-}
-
-/* ── TEAM SLOTS ── */
-.team-grid { display: flex; flex-direction: column; gap: 0.5rem; }
-
-.team-row {
-  display: grid;
-  grid-template-columns: 3.5rem 1fr;
-  gap: 0.6rem;
-  align-items: center;
-  transition: transform 0.15s;
-}
-.team-row:hover { transform: translateX(2px); }
-
-.rank-badge {
-  background: rgba(255,255,255,0.05);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  height: 52px;
-  gap: 1px;
-  transition: all 0.2s;
-}
-.rank-badge .rn { font-family: 'Anton', sans-serif; font-size: 1.25rem; line-height: 1; color: var(--text); }
-.rank-badge .rp { font-family: var(--mono); font-size: 0.5rem; color: var(--gold); letter-spacing: 0.05em; }
-
-.team-row.rank-1 .rank-badge { border-color: rgba(240,192,64,0.4); background: rgba(240,192,64,0.08); }
-.team-row.rank-1 .rank-badge .rn { color: var(--gold); }
-.team-row.rank-2 .rank-badge { border-color: rgba(240,192,64,0.2); }
-.team-row.rank-3 .rank-badge, .team-row.rank-4 .rank-badge { border-color: rgba(240,192,64,0.12); }
-
-/* Custom select wrapper */
-.select-wrap { position: relative; }
-.select-wrap::after {
-  content: '▾';
-  position: absolute; right: 1rem; top: 50%; transform: translateY(-50%);
-  color: var(--muted); font-size: 0.75rem; pointer-events: none;
-}
-
-select {
-  width: 100%;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  color: var(--text);
-  font-family: 'DM Sans', sans-serif;
-  font-size: 0.95rem;
-  padding: 0.75rem 2.5rem 0.75rem 1rem;
-  outline: none;
-  appearance: none;
-  cursor: pointer;
-  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
-  height: 52px;
-}
-select:focus {
-  border-color: var(--pitch-light);
-  background: rgba(255,255,255,0.07);
-  box-shadow: 0 0 0 3px rgba(18,122,61,0.2);
-}
-select option { background: #0f1f14; color: var(--text); }
-select.picked { border-color: rgba(18,122,61,0.6); background: rgba(13,92,46,0.15); }
-select.picked + .check { display: flex; }
-
-/* Checkmark */
-.check {
-  display: none;
-  position: absolute; right: 2.5rem; top: 50%; transform: translateY(-50%);
-  width: 16px; height: 16px;
-  background: var(--pitch-light);
-  border-radius: 50%;
-  align-items: center; justify-content: center;
-  font-size: 0.6rem; color: #fff;
-}
-
-/* Progress bar */
-.progress-wrap {
-  margin: 1.25rem 0 0;
-}
-.progress-label {
-  display: flex; justify-content: space-between;
-  font-family: var(--mono); font-size: 0.65rem; color: var(--muted);
-  margin-bottom: 0.4rem;
-}
-.progress-label span { color: var(--gold); }
-.progress-bar {
-  height: 4px;
-  background: rgba(255,255,255,0.07);
-  border-radius: 100px;
-  overflow: hidden;
-}
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--pitch-light), var(--gold));
-  border-radius: 100px;
-  width: 0%;
-  transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-/* ── MESSAGES ── */
-.msg {
-  border-radius: 12px;
-  padding: 0.9rem 1.1rem;
-  font-size: 0.88rem;
-  margin-bottom: 1rem;
-  display: none;
-  line-height: 1.5;
-  animation: fadeUp 0.3s ease;
-}
-.msg.error { background: rgba(224,48,48,0.12); border: 1px solid rgba(224,48,48,0.35); color: #ff8080; }
-.msg.success { background: rgba(13,92,46,0.2); border: 1px solid rgba(18,122,61,0.45); color: #6fefaa; }
-
-/* ── SUBMIT BUTTON ── */
-.submit-wrap { position: relative; margin-top: 0.5rem; }
-
-.submit-btn {
-  width: 100%;
-  background: linear-gradient(135deg, var(--pitch-light) 0%, #0d7a3a 100%);
-  color: #fff;
-  border: none;
-  border-radius: 14px;
-  font-family: 'Anton', sans-serif;
-  font-size: 1.5rem;
-  letter-spacing: 0.06em;
-  padding: 1.1rem;
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
-  transition: transform 0.15s, box-shadow 0.2s;
-  box-shadow: 0 4px 30px rgba(13,92,46,0.4), 0 1px 0 rgba(255,255,255,0.1) inset;
-}
-.submit-btn::before {
-  content: '';
-  position: absolute; inset: 0;
-  background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
+  animation: fadeUp 0.8s 0.1s ease both;
   opacity: 0;
-  transition: opacity 0.2s;
+  animation-fill-mode: both;
 }
-.submit-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 40px rgba(13,92,46,0.5), 0 1px 0 rgba(255,255,255,0.1) inset; }
-.submit-btn:hover::before { opacity: 1; }
-.submit-btn:active:not(:disabled) { transform: translateY(0); }
-.submit-btn:disabled { background: rgba(255,255,255,0.07); color: var(--muted); box-shadow: none; cursor: not-allowed; }
-
-.ripple {
-  position: absolute;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.3);
-  transform: scale(0);
-  animation: ripple 0.5s linear;
-  pointer-events: none;
-}
-@keyframes ripple { to { transform: scale(4); opacity: 0; } }
-
-/* Spinner */
-.spin {
-  display: none;
-  width: 20px; height: 20px;
-  border: 2px solid rgba(255,255,255,0.3);
-  border-top-color: #fff;
-  border-radius: 50%;
-  animation: spin 0.7s linear infinite;
-  vertical-align: middle; margin-right: 0.5rem;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-
-/* ── FEE NOTE ── */
-.fee-note {
-  text-align: center;
+.rules-intro {
+  font-size: 0.92rem;
   color: var(--muted);
-  font-size: 0.78rem;
-  margin-top: 1rem;
+  font-style: italic;
+  margin-bottom: 1.25rem;
   line-height: 1.6;
+  border-left: 2px solid rgba(240,192,64,0.3);
+  padding-left: 0.85rem;
 }
-.fee-note strong { color: var(--gold); }
-
-/* ── SUCCESS OVERLAY ── */
-.success-overlay {
-  display: none;
-  position: fixed; inset: 0; z-index: 100;
-  background: rgba(8,15,10,0.95);
-  backdrop-filter: blur(20px);
-  align-items: center; justify-content: center;
-  flex-direction: column; text-align: center;
-  padding: 2rem;
+.rules-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 1.25rem;
 }
-.success-overlay.show { display: flex; animation: fadeIn 0.4s ease; }
-.success-overlay .big-emoji { font-size: 5rem; margin-bottom: 1rem; animation: bounceIn 0.6s 0.2s both; }
-.success-overlay h2 { font-family: 'Anton', sans-serif; font-size: 3rem; color: var(--gold); margin-bottom: 0.5rem; }
-.success-overlay p { color: var(--muted); max-width: 380px; line-height: 1.6; }
-.success-overlay .entry-summary {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 1.25rem 1.5rem;
-  margin: 1.5rem 0;
-  text-align: left;
-  max-width: 380px; width: 100%;
+.rule-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
 }
-.entry-summary .row { display: flex; justify-content: space-between; padding: 0.35rem 0; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
-.entry-summary .row:last-child { border-bottom: none; }
-.entry-summary .row .team { color: var(--text); }
-.entry-summary .row .pts { font-family: var(--mono); color: var(--gold); font-size: 0.75rem; }
-.again-btn {
-  background: var(--surface);
-  border: 1px solid var(--border-bright);
-  color: var(--text);
+.rule-row.special {
+  border-color: rgba(205,140,82,0.3);
+  background: rgba(205,140,82,0.07);
+}
+.rule-pick {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  color: var(--muted);
+  min-width: 2.5rem;
+}
+.rule-pts {
+  font-family: 'Anton', sans-serif;
+  font-size: 1.1rem;
+  color: var(--gold);
+  min-width: 2rem;
+}
+.rule-row.special .rule-pts { color: #cd8c52; }
+.rule-desc {
+  font-size: 0.75rem;
+  color: var(--muted);
+  line-height: 1.3;
+}
+.rules-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 1.1rem 0;
+}
+.prize-split {
+  display: flex;
+  gap: 0.5rem;
+}
+.prize-split-item {
+  flex: 1;
+  text-align: center;
   border-radius: 10px;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 0.9rem;
-  padding: 0.75rem 2rem;
-  cursor: pointer;
-  transition: background 0.2s;
+  padding: 0.6rem 0.4rem;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.03);
 }
-.again-btn:hover { background: var(--surface-hover); }
+.prize-split-item.p1 { border-color: rgba(240,192,64,0.35); background: rgba(240,192,64,0.07); }
+.prize-split-item.p2 { border-color: rgba(192,200,208,0.25); }
+.prize-split-item.p3 { border-color: rgba(205,140,82,0.2); }
+.prize-split-item .ps-place { font-family: var(--mono); font-size: 0.58rem; color: var(--muted); margin-bottom: 0.2rem; }
+.prize-split-item .ps-pct { font-family: 'Anton', sans-serif; font-size: 1.5rem; line-height: 1; }
+.prize-split-item.p1 .ps-pct { color: var(--gold); }
+.prize-split-item.p2 .ps-pct { color: #c0c8d0; }
+.prize-split-item.p3 .ps-pct { color: #cd8c52; }
+.prize-split-item .ps-label { font-size: 0.65rem; color: var(--muted); margin-top: 0.15rem; }
 
-/* ── ANIMATIONS ── */
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-@keyframes bounceIn {
-  0%   { transform: scale(0.3); opacity: 0; }
-  60%  { transform: scale(1.15); }
-  80%  { transform: scale(0.95); }
-  100% { transform: scale(1); opacity: 1; }
-}
-
-/* ── SETUP NOTICE ── */
-.setup-bar {
-  background: rgba(240,192,64,0.07);
-  border: 1px dashed rgba(240,192,64,0.3);
-  border-radius: 12px;
-  padding: 0.9rem 1.1rem;
-  font-size: 0.78rem;
-  color: rgba(240,192,64,0.8);
-  line-height: 1.7;
-  margin-bottom: 1.5rem;
-  animation: fadeUp 0.8s ease both;
-}
-.setup-bar strong { display: block; color: var(--gold); margin-bottom: 0.2rem; font-size: 0.82rem; }
-code { background: rgba(255,255,255,0.08); padding: 0.1em 0.4em; border-radius: 4px; font-family: var(--mono); font-size: 0.9em; }
-
-@media (max-width: 480px) {
-  .points-strip { gap: 0.25rem; }
-  .pt-cell .v { font-size: 1.1rem; }
-  .card { padding: 1.25rem; }
-}
 </style>
 </head>
 <body>
@@ -997,6 +558,81 @@ code { background: rgba(255,255,255,0.08); padding: 0.1em 0.4em; border-radius: 
     <div class="pt-cell"><div class="n">Pick 6</div><div class="v">4</div><div class="u">pts/win</div></div>
     <div class="pt-cell"><div class="n">Pick 7</div><div class="v">2</div><div class="u">pts/win</div></div>
     <div class="pt-cell"><div class="n">Pick 8</div><div class="v">1</div><div class="u">pts/win</div></div>
+  </div>
+
+  <!-- RULES CARD -->
+  <div class="rules-card">
+    <div class="card-label">How it works</div>
+    <p class="rules-intro">A slightly different pool — some of you know this, some of you don't. Only wins count. Draws and losses score nothing. Pick 8 teams in order — the higher the pick, the more each win is worth.</p>
+
+    <div class="rules-grid">
+      <div class="rule-row">
+        <span class="rule-pick">Pick 1</span>
+        <span class="rule-pts">10</span>
+        <span class="rule-desc">pts per win</span>
+      </div>
+      <div class="rule-row">
+        <span class="rule-pick">Pick 2</span>
+        <span class="rule-pts">9</span>
+        <span class="rule-desc">pts per win</span>
+      </div>
+      <div class="rule-row">
+        <span class="rule-pick">Pick 3</span>
+        <span class="rule-pts">8</span>
+        <span class="rule-desc">pts per win</span>
+      </div>
+      <div class="rule-row special">
+        <span class="rule-pick">Pick 3 🥉</span>
+        <span class="rule-pts">4</span>
+        <span class="rule-desc">pts if this team wins the 3rd place match — that game is worth 4pts, not 8</span>
+      </div>
+      <div class="rule-row">
+        <span class="rule-pick">Pick 4</span>
+        <span class="rule-pts">8</span>
+        <span class="rule-desc">pts per win</span>
+      </div>
+      <div class="rule-row">
+        <span class="rule-pick">Pick 5</span>
+        <span class="rule-pts">6</span>
+        <span class="rule-desc">pts per win</span>
+      </div>
+      <div class="rule-row">
+        <span class="rule-pick">Pick 6</span>
+        <span class="rule-pts">4</span>
+        <span class="rule-desc">pts per win</span>
+      </div>
+      <div class="rule-row">
+        <span class="rule-pick">Pick 7</span>
+        <span class="rule-pts">2</span>
+        <span class="rule-desc">pts per win</span>
+      </div>
+      <div class="rule-row">
+        <span class="rule-pick">Pick 8</span>
+        <span class="rule-pts">1</span>
+        <span class="rule-desc">pt per win</span>
+      </div>
+    </div>
+
+    <div class="rules-divider"></div>
+
+    <div class="card-label" style="margin-bottom:0.85rem">Prize pot split</div>
+    <div class="prize-split">
+      <div class="prize-split-item p1">
+        <div class="ps-place">1st place</div>
+        <div class="ps-pct">75%</div>
+        <div class="ps-label">of the pot</div>
+      </div>
+      <div class="prize-split-item p2">
+        <div class="ps-place">2nd place</div>
+        <div class="ps-pct">20%</div>
+        <div class="ps-label">of the pot</div>
+      </div>
+      <div class="prize-split-item p3">
+        <div class="ps-place">3rd place</div>
+        <div class="ps-pct">5%</div>
+        <div class="ps-label">of the pot</div>
+      </div>
+    </div>
   </div>
 
   <div class="deadline">
@@ -1037,11 +673,8 @@ code { background: rgba(255,255,255,0.08); padding: 0.1em 0.4em; border-radius: 
   </div>
 
   <p class="fee-note">
-    Swish your entry fee to <strong>[Navin - 0706914536]</strong><br>
+    Swish your entry fee to <strong>[Navin - 070 691 4536]</strong><br>
     to be eligible for the prize pot.
-  </p>
-
-</div>    to be eligible for the prize pot.
   </p>
 
 </div>

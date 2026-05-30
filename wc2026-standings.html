@@ -213,7 +213,6 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
       <div><span class="live-dot"></span>LAST UPDATED</div>
       <div class="ts" id="lastUpdatedTime">—</div>
       <div style="margin-top:0.25rem">Auto-refreshes every 5 min</div>
-      <div id="debugStatus" style="margin-top:0.25rem;color:rgba(240,192,64,.75)">v3 loader</div>
     </div>
   </div>
 
@@ -328,9 +327,24 @@ const FLAGS = {
   'United States':'🇺🇸','Uruguay':'🇺🇾','Uzbekistan':'🇺🇿',
 };
 function cleanTeamName(t){
-  // Google Sheet/form values may arrive as "CD DR Congo" or "JO Jordan".
-  // Strip a leading 2-letter country code before looking up flags or displaying.
-  return (t||'').trim().replace(/^[A-Z]{2}\s+/, '').trim();
+  t = (t || '').trim();
+
+  const mappings = {
+    'CD DR Congo': 'DR Congo',
+    'JO Jordan': 'Jordan',
+    'SE Sweden': 'Sweden',
+    'CA Canada': 'Canada',
+    'BR Brazil': 'Brazil',
+    'HT Haiti': 'Haiti',
+    'DE Germany': 'Germany',
+    'FR France': 'France'
+  };
+
+  if (mappings[t]) return mappings[t];
+
+  // Strip a leading two-letter code only when what remains is a known team.
+  const withoutCode = t.replace(/^[A-Z]{2}\s+/, '').trim();
+  return FLAGS[withoutCode] ? withoutCode : t;
 }
 function flag(t){ return FLAGS[cleanTeamName(t)]||'' }
 
@@ -644,7 +658,7 @@ async function loadData(){
         entryNum,
         score,
         potential,
-        paid: paidValue(paidText),
+        paid: true,
         teams: String(teamsText || '').split('/').map(t => t.trim()).filter(Boolean),
         elimTeams: String(elimTeamsText || '').split('/').map(t => t.trim()).filter(Boolean),
         mathElim: yesNo(mathElimText),
@@ -655,8 +669,6 @@ async function loadData(){
 
     document.getElementById('lastUpdatedTime').textContent =
       new Date().toLocaleString('sv-SE', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'});
-
-    if (debug) debug.textContent = 'loaded ' + allEntries.length + ' entries';
 
     renderStats(allEntries);
     renderTable();

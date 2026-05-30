@@ -84,7 +84,7 @@ body {
   margin-bottom: 1.5rem;
 }
 
-.hero-eyebrow::before { content: '●'; font-size: 0.5rem; animation: pulse 2s infinite; }
+.hero-eyebrow::before { content: '●'; font-size: 0.48rem; animation: pulse 2s infinite; }
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
 h1 {
@@ -177,7 +177,7 @@ h1 .line2 {
 .field { margin-bottom: 1rem; }
 .field label { display: block; font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.4rem; font-family: var(--mono); }
 
-input[type=text] {
+input[type=text], input[type=email] {
   width: 100%;
   background: rgba(255,255,255,0.05);
   border: 1px solid var(--border);
@@ -189,7 +189,7 @@ input[type=text] {
   outline: none;
   transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
 }
-input[type=text]:focus {
+input[type=text]:focus, input[type=email]:focus {
   border-color: var(--pitch-light);
   background: rgba(255,255,255,0.07);
   box-shadow: 0 0 0 3px rgba(18,122,61,0.2);
@@ -200,7 +200,7 @@ input[type=text]:focus {
 
 .team-row {
   display: grid;
-  grid-template-columns: 3.5rem 1fr;
+  grid-template-columns: 4.6rem 1fr;
   gap: 0.6rem;
   align-items: center;
   transition: transform 0.15s;
@@ -289,6 +289,67 @@ select.picked + .check { display: flex; }
   border-radius: 100px;
   width: 0%;
   transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+
+/* ── LIVE PICK PREVIEW ── */
+.pick-preview {
+  margin-top: 1.25rem;
+  background: rgba(255,255,255,0.035);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1rem;
+}
+.pick-preview-title {
+  display:flex;
+  justify-content:space-between;
+  gap:.75rem;
+  align-items:center;
+  font-family:var(--mono);
+  font-size:.62rem;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:var(--muted);
+  margin-bottom:.75rem;
+}
+.preview-grid {
+  display:grid;
+  grid-template-columns:repeat(2, minmax(0, 1fr));
+  gap:.45rem;
+}
+.preview-pill {
+  display:flex;
+  align-items:center;
+  gap:.45rem;
+  min-height:36px;
+  padding:.45rem .55rem;
+  border-radius:10px;
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.07);
+  font-size:.78rem;
+  color:var(--muted);
+}
+.preview-pill.filled {
+  color:var(--text);
+  border-color:rgba(18,122,61,.35);
+  background:rgba(13,92,46,.12);
+}
+.preview-rank {
+  font-family:var(--mono);
+  font-size:.58rem;
+  color:var(--gold);
+  min-width:2.2rem;
+}
+.flag-img {
+  width:18px;
+  height:13px;
+  object-fit:cover;
+  border-radius:2px;
+  box-shadow:0 0 0 1px rgba(255,255,255,.15);
+  flex-shrink:0;
+}
+@media (max-width: 480px) {
+  .preview-grid { grid-template-columns:1fr; }
 }
 
 /* ── MESSAGES ── */
@@ -536,7 +597,7 @@ code { background: rgba(255,255,255,0.08); padding: 0.1em 0.4em; border-radius: 
 <div class="success-overlay" id="successOverlay">
   <div class="big-emoji">⚽</div>
   <h2>YOU'RE IN!</h2>
-  <p>Entry submitted successfully. Good luck — may your teams go all the way.</p>
+  <p>Entry submitted successfully. Review your picks below — good luck!</p>
   <div class="entry-summary" id="entrySummary"></div>
   <p style="color:var(--gold);font-size:0.82rem;margin-bottom:1.25rem">💳 Don't forget to pay your entry fee to be eligible for prizes</p>
   <button class="again-btn" onclick="resetForm()">← Submit another entry</button>
@@ -647,6 +708,10 @@ code { background: rgba(255,255,255,0.08); padding: 0.1em 0.4em; border-radius: 
       <input type="text" id="nameInput" placeholder="e.g. Marcus Lindström" autocomplete="name" oninput="clearError()">
     </div>
     <div class="field">
+      <label>Email</label>
+      <input type="email" id="emailInput" placeholder="e.g. marcus@example.com" autocomplete="email" oninput="clearError()">
+    </div>
+    <div class="field">
       <label>Entry Number &nbsp;<span style="text-transform:none;letter-spacing:0;font-size:0.8em">(submitting multiple? number them 1, 2, 3…)</span></label>
       <input type="text" id="entryInput" placeholder="1" value="1" oninput="clearError()">
     </div>
@@ -656,6 +721,13 @@ code { background: rgba(255,255,255,0.08); padding: 0.1em 0.4em; border-radius: 
   <div class="card" style="animation-delay:0.35s">
     <div class="card-label">Your 8 Teams — In Ranked Order</div>
     <div class="team-grid" id="teamGrid"></div>
+    <div class="pick-preview">
+      <div class="pick-preview-title">
+        <span>Live pick preview</span>
+        <span id="previewStatus">Choose 8 teams</span>
+      </div>
+      <div class="preview-grid" id="pickPreview"></div>
+    </div>
     <div class="progress-wrap">
       <div class="progress-label">Teams selected <span id="progressCount">0 / 8</span></div>
       <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
@@ -673,7 +745,7 @@ code { background: rgba(255,255,255,0.08); padding: 0.1em 0.4em; border-radius: 
   </div>
 
   <p class="fee-note">
-    Swish your entry fee to <strong>[Navin - 070 691 4536]</strong><br>
+    Pay your entry fee to <strong>[YOUR NAME — PAYMENT DETAILS]</strong><br>
     to be eligible for the prize pot.
   </p>
 
@@ -681,7 +753,7 @@ code { background: rgba(255,255,255,0.08); padding: 0.1em 0.4em; border-radius: 
 
 <script>
 // ── CONFIG ────────────────────────────────────────────────────────────────────
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzyojXc1WRDQoikkCJD2Xxi4XuQb_d7ITGBMZZau4KhI-kGICkeaEo_byYDz8KRcUb3-Q/exec';
+const APPS_SCRIPT_URL = 'YOUR_APPS_SCRIPT_URL';
 // ─────────────────────────────────────────────────────────────────────────────
 
 const PTS = [10,9,8,8,6,4,2,1];
@@ -699,6 +771,27 @@ const TEAMS = [
   "United States","Uruguay","Uzbekistan"
 ].sort();
 
+
+const FLAG_CODES = {
+  'Algeria':'dz','Argentina':'ar','Australia':'au','Austria':'at','Belgium':'be',
+  'Bosnia & Herzegovina':'ba','Brazil':'br','Canada':'ca','Cape Verde':'cv','Colombia':'co',
+  'Croatia':'hr','Curaçao':'cw','Czechia':'cz',"Côte d'Ivoire":'ci','DR Congo':'cd',
+  'Ecuador':'ec','Egypt':'eg','France':'fr','Germany':'de','Ghana':'gh',
+  'Haiti':'ht','Iran':'ir','Iraq':'iq','Japan':'jp','Jordan':'jo',
+  'Mexico':'mx','Morocco':'ma','Netherlands':'nl','New Zealand':'nz','Norway':'no',
+  'Panama':'pa','Paraguay':'py','Portugal':'pt','Qatar':'qa','Saudi Arabia':'sa',
+  'Senegal':'sn','South Africa':'za','South Korea':'kr','Spain':'es','Sweden':'se',
+  'Switzerland':'ch','Tunisia':'tn','Türkiye':'tr','United States':'us','Uruguay':'uy',
+  'Uzbekistan':'uz'
+};
+
+function flagImg(team) {
+  const code = FLAG_CODES[team];
+  if (!code) return '';
+  return `<img class="flag-img" src="https://flagcdn.com/24x18/${code}.png" srcset="https://flagcdn.com/48x36/${code}.png 2x" alt="${team} flag" loading="lazy">`;
+}
+
+
 function buildGrid() {
   const g = document.getElementById('teamGrid');
   for (let i = 0; i < 8; i++) {
@@ -707,7 +800,7 @@ function buildGrid() {
     row.innerHTML = `
       <div class="rank-badge">
         <div class="rn">${i+1}</div>
-        <div class="rp">${PTS[i]}pt</div>
+        <div class="rp">${PTS[i]} pts/win</div>
       </div>
       <div class="select-wrap">
         <select id="t${i}" onchange="onPick()">
@@ -721,6 +814,45 @@ function buildGrid() {
 }
 
 function picks() { return Array.from({length:8},(_,i)=>document.getElementById(`t${i}`).value); }
+
+function buildPreview() {
+  const preview = document.getElementById('pickPreview');
+  if (!preview) return;
+  preview.innerHTML = Array.from({length:8}, (_,i) => `
+    <div class="preview-pill" id="previewPick${i}">
+      <span class="preview-rank">Pick ${i+1}</span>
+      <span class="preview-team">Waiting for selection</span>
+      <span style="margin-left:auto;font-family:var(--mono);font-size:.58rem;color:var(--gold)">${PTS[i]} pts/win</span>
+    </div>
+  `).join('');
+}
+
+function updatePreview() {
+  const selected = picks();
+  selected.forEach((team, i) => {
+    const pill = document.getElementById(`previewPick${i}`);
+    if (!pill) return;
+    if (team) {
+      pill.classList.add('filled');
+      pill.innerHTML = `
+        <span class="preview-rank">Pick ${i+1}</span>
+        ${flagImg(team)}
+        <span class="preview-team">${team}</span>
+        <span style="margin-left:auto;font-family:var(--mono);font-size:.58rem;color:var(--gold)">${PTS[i]} pts/win</span>
+      `;
+    } else {
+      pill.classList.remove('filled');
+      pill.innerHTML = `
+        <span class="preview-rank">Pick ${i+1}</span>
+        <span class="preview-team">Waiting for selection</span>
+        <span style="margin-left:auto;font-family:var(--mono);font-size:.58rem;color:var(--gold)">${PTS[i]} pts/win</span>
+      `;
+    }
+  });
+  const count = selected.filter(Boolean).length;
+  const status = document.getElementById('previewStatus');
+  if (status) status.textContent = count === 8 ? 'Ready to submit' : `${8-count} picks left`;
+}
 
 function onPick() {
   const sel = picks();
@@ -739,6 +871,7 @@ function onPick() {
   const count = sel.filter(Boolean).length;
   document.getElementById('progressCount').textContent = `${count} / 8`;
   document.getElementById('progressFill').style.width = `${(count/8)*100}%`;
+  updatePreview();
   clearError();
 }
 
@@ -749,8 +882,11 @@ function clearError() {
 function validate() {
   const n = document.getElementById('nameInput').value.trim();
   const e = document.getElementById('entryInput').value.trim();
+  const email = document.getElementById('emailInput').value.trim();
   const p = picks();
   if (!n) return 'Please enter your name.';
+  if (!email) return 'Please enter your email address.';
+  if (!/^\S+@\S+\.\S+$/.test(email)) return 'Please enter a valid email address.';
   if (!e) return 'Please enter an entry number.';
   if (p.some(v=>!v)) return `Please select all 8 teams — you have ${p.filter(Boolean).length} so far.`;
   if (new Set(p).size < 8) return 'Duplicate teams detected — each pick must be a different nation.';
@@ -781,6 +917,7 @@ async function handleSubmit(e) {
   const payload = {
     timestamp: new Date().toISOString(),
     name: document.getElementById('nameInput').value.trim(),
+    email: document.getElementById('emailInput').value.trim(),
     entryNum: document.getElementById('entryInput').value.trim(),
     team1:p[0],team2:p[1],team3:p[2],team4:p[3],
     team5:p[4],team6:p[5],team7:p[6],team8:p[7]
@@ -815,7 +952,7 @@ async function handleSubmit(e) {
 function showSuccess(payload, p) {
   // Build summary
   const labels = ['1st','2nd','3rd','4th','5th','6th','7th','8th'];
-  let html = `<div class="row" style="font-family:var(--mono);font-size:0.7rem;color:var(--muted);border-bottom:1px solid var(--border);padding-bottom:0.4rem;margin-bottom:0.1rem"><span>${payload.name} — Entry #${payload.entryNum}</span></div>`;
+  let html = `<div class="row" style="font-family:var(--mono);font-size:0.7rem;color:var(--muted);border-bottom:1px solid var(--border);padding-bottom:0.4rem;margin-bottom:0.1rem"><span>${payload.name} — Entry #${payload.entryNum}</span></div><div class="row" style="font-family:var(--mono);font-size:0.7rem;color:var(--muted)"><span>${payload.email}</span></div>`;
   p.forEach((t,i) => {
     html += `<div class="row"><span class="team">${labels[i]} · ${t}</span><span class="pts">${PTS[i]}pt/win</span></div>`;
   });
@@ -835,6 +972,8 @@ function resetForm() {
 }
 
 buildGrid();
+buildPreview();
+updatePreview();
 </script>
 </body>
 </html>

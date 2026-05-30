@@ -290,10 +290,19 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
           <th>Entrant</th>
           <th>Teams</th>
           <th class="num">Score</th>
-          <th class="num">Max Possible</th>
+          <th class="num">Max Still Achievable</th>
         </tr>
       </thead>
-      <tbody id="standingsBody"></tbody>
+      
+<div id="leaderCard" style="margin:1rem 0 1.5rem 0;padding:1rem 1.25rem;border-radius:16px;
+background:linear-gradient(135deg,rgba(212,175,55,.18),rgba(212,175,55,.06));
+border:1px solid rgba(212,175,55,.35);text-align:center">
+  <div style="font-size:.9rem;letter-spacing:.08em;opacity:.85">🏆 CURRENT LEADER</div>
+  <div id="leaderName" style="font-size:1.6rem;font-weight:700;margin-top:.25rem">—</div>
+  <div id="leaderMeta" style="opacity:.8">—</div>
+</div>
+
+<tbody id="standingsBody"></tbody>
     </table>
     <div class="empty-state" id="emptyState">
       <div class="icon">🔍</div>
@@ -668,7 +677,7 @@ async function loadData(){
       const name = cellByHeader(c, headers, ['Name', 'Entrant'], 1).trim();
       const entryNum = cellByHeader(c, headers, ['Entry#', 'Entry Number', 'EntryNum', 'Entry'], 2).trim();
       const score = parseInt(cellByHeader(c, headers, ['Actual Score', 'Score'], 3), 10) || 0;
-      const potential = parseInt(cellByHeader(c, headers, ['Potential Score', 'Potential', 'Max Possible'], 4), 10) || 0;
+      const potential = parseInt(cellByHeader(c, headers, ['Potential Score', 'Potential', 'Max Still Achievable'], 4), 10) || 0;
       const teamsText = cellByHeader(c, headers, ['Teams'], 5);
       const elimTeamsText = cellByHeader(c, headers, ['ElimTeams', 'Elim Teams', 'Eliminated Teams'], 6);
       const mathElimText = cellByHeader(c, headers, ['MathElim', 'Math Elim', 'Mathematically Eliminated'], 7);

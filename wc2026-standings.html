@@ -312,44 +312,60 @@ const REFRESH_MS  = 5 * 60 * 1000;
 
 // Flag emoji map
 const FLAGS = {
-  'Algeria':'🇩🇿','Argentina':'🇦🇷','Australia':'🇦🇺','Austria':'🇦🇹',
-  'Belgium':'🇧🇪','Bosnia & Herzegovina':'🇧🇦','Brazil':'🇧🇷',
-  'Canada':'🇨🇦','Cape Verde':'🇨🇻','Colombia':'🇨🇴','Croatia':'🇭🇷',
-  'Curaçao':'🇨🇼','Czechia':'🇨🇿',"Côte d'Ivoire":'🇨🇮',
-  'DR Congo':'🇨🇩','Ecuador':'🇪🇨','Egypt':'🇪🇬','England':'🏴󠁧󠁢󠁥󠁮󠁧󠁿',
-  'France':'🇫🇷','Germany':'🇩🇪','Ghana':'🇬🇭','Haiti':'🇭🇹',
-  'Iran':'🇮🇷','Iraq':'🇮🇶','Japan':'🇯🇵','Jordan':'🇯🇴',
-  'Mexico':'🇲🇽','Morocco':'🇲🇦','Netherlands':'🇳🇱','New Zealand':'🇳🇿',
-  'Norway':'🇳🇴','Panama':'🇵🇦','Paraguay':'🇵🇾','Portugal':'🇵🇹',
-  'Qatar':'🇶🇦','Saudi Arabia':'🇸🇦','Scotland':'🏴󠁧󠁢󠁳󠁣󠁴󠁿','Senegal':'🇸🇳',
-  'South Africa':'🇿🇦','South Korea':'🇰🇷','Spain':'🇪🇸','Sweden':'🇸🇪',
-  'Switzerland':'🇨🇭','Tunisia':'🇹🇳','Türkiye':'🇹🇷',
-  'United States':'🇺🇸','Uruguay':'🇺🇾','Uzbekistan':'🇺🇿',
+  'DR Congo':'🇨🇩',
+  'Jordan':'🇯🇴',
+  'Sweden':'🇸🇪',
+  'Canada':'🇨🇦',
+  'Brazil':'🇧🇷',
+  'Haiti':'🇭🇹',
+  'Germany':'🇩🇪',
+  'France':'🇫🇷',
+
+  'Algeria':'🇩🇿',
+  'Argentina':'🇦🇷',
+  'Australia':'🇦🇺',
+  'Austria':'🇦🇹',
+  'Belgium':'🇧🇪',
+  'Bosnia & Herzegovina':'🇧🇦',
+  'Cape Verde':'🇨🇻',
+  'Colombia':'🇨🇴',
+  'Croatia':'🇭🇷',
+  'Curaçao':'🇨🇼',
+  'Czechia':'🇨🇿',
+  "Côte d'Ivoire":'🇨🇮',
+  'Ecuador':'🇪🇨',
+  'Egypt':'🇪🇬',
+  'England':'🏴',
+  'Ghana':'🇬🇭',
+  'Iran':'🇮🇷',
+  'Iraq':'🇮🇶',
+  'Japan':'🇯🇵',
+  'Mexico':'🇲🇽',
+  'Morocco':'🇲🇦',
+  'Netherlands':'🇳🇱',
+  'New Zealand':'🇳🇿',
+  'Norway':'🇳🇴',
+  'Panama':'🇵🇦',
+  'Paraguay':'🇵🇾',
+  'Portugal':'🇵🇹',
+  'Qatar':'🇶🇦',
+  'Saudi Arabia':'🇸🇦',
+  'Scotland':'🏴',
+  'Senegal':'🇸🇳',
+  'South Africa':'🇿🇦',
+  'South Korea':'🇰🇷',
+  'Spain':'🇪🇸',
+  'Switzerland':'🇨🇭',
+  'Tunisia':'🇹🇳',
+  'Türkiye':'🇹🇷',
+  'United States':'🇺🇸',
+  'Uruguay':'🇺🇾',
+  'Uzbekistan':'🇺🇿'
 };
-function cleanTeamName(t){
-  t = (t || '').trim();
 
-  const mappings = {
-    'CD DR Congo': 'DR Congo',
-    'DR Congo': 'DR Congo',
-    'JO Jordan': 'Jordan',
-    'SE Sweden': 'Sweden',
-    'CA Canada': 'Canada',
-    'BR Brazil': 'Brazil',
-    'HT Haiti': 'Haiti',
-    'DE Germany': 'Germany',
-    'FR France': 'France'
-  };
-
-  if (mappings[t]) return mappings[t];
-
-  // Remove the two-letter form code only if the remaining value is a known team.
-  const withoutCode = t.replace(/^[A-Z]{2}\s+/, '').trim();
-  if (FLAGS[withoutCode]) return withoutCode;
-
-  return t;
+function flag(t){
+  return FLAGS[(t || '').trim()] || '';
 }
-function flag(t){ return FLAGS[cleanTeamName(t)] || '' }
 
 const PTS = [10,9,8,8,6,4,2,1];
 
@@ -470,8 +486,8 @@ function renderTable(){
     const statusIcon  = e.isLeader?'👑':e.isAlive?'🔥':'💀';
 
     const teamTags = e.teams.map((t,i)=>{
-      const displayTeam = cleanTeamName(t);
-      const isElim = e.elimTeams?.map(cleanTeamName).includes(displayTeam);
+      const displayTeam = (t || '').trim();
+      const isElim = e.elimTeams?.map(x => (x || '').trim()).includes(displayTeam);
       const isPick1 = i===0;
       const isPick3rd = i===2; // slot 3 = index 2 = 3rd place bonus slot
       let cls = isElim ? 'elim-team' : 'still-in';

@@ -963,6 +963,8 @@ const FLAGS = {
   'Czechia':'CZ',
   "Côte d'Ivoire":'CI',
   'Ecuador':'EC',
+  'England':'GB-ENG',
+  'Scotland':'GB-SCT',
   'Egypt':'EG',
   'Ghana':'GH',
   'Iran':'IR',
@@ -1025,7 +1027,10 @@ function normalizeTeamName(t){
 }
 
 function codeToFlagEmoji(code){
-  if(!code || code.length !== 2) return '';
+  if(!code) return '';
+  if(code === 'GB-ENG') return '🏴';
+  if(code === 'GB-SCT') return '🏴󠁧󠁢󠁳󠁣󠁴󠁿';
+  if(code.length !== 2) return '';
   return code
     .toUpperCase()
     .replace(/./g, char => String.fromCodePoint(127397 + char.charCodeAt(0)));
@@ -1036,15 +1041,25 @@ function flag(t){
   const code = FLAGS[name];
   if (!code) return '';
 
-  const lower = code.toLowerCase();
   const emoji = codeToFlagEmoji(code);
+  const imgCode = code.toLowerCase();
+  const imgSrc = code === 'GB-ENG'
+    ? 'https://flagcdn.com/24x18/gb-eng.png'
+    : code === 'GB-SCT'
+      ? 'https://flagcdn.com/24x18/gb-sct.png'
+      : `https://flagcdn.com/24x18/${imgCode}.png`;
+
+  const imgSrc2x = code === 'GB-ENG'
+    ? 'https://flagcdn.com/48x36/gb-eng.png'
+    : code === 'GB-SCT'
+      ? 'https://flagcdn.com/48x36/gb-sct.png'
+      : `https://flagcdn.com/48x36/${imgCode}.png`;
 
   return `<span class="flag-hybrid" title="${name}">
-    <img class="flag-img" src="https://flagcdn.com/24x18/${lower}.png" srcset="https://flagcdn.com/48x36/${lower}.png 2x" alt="${name} flag" loading="lazy">
+    <img class="flag-img" src="${imgSrc}" srcset="${imgSrc2x} 2x" alt="${name} flag" loading="lazy">
     <span class="flag-emoji">${emoji}</span>
   </span>`;
 }
-
 
 const PTS = [10,9,8,8,6,4,2,1];
 

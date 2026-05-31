@@ -784,6 +784,17 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
   }
 }
 
+
+/* Hide leading/needs-to-lead text on mobile */
+@media (max-width: 640px) {
+  .gap-label,
+  .leader-gap,
+  .score-gap,
+  .needs-to-lead {
+    display: none !important;
+  }
+}
+
 </style>
 </head>
 <body>

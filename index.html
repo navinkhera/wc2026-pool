@@ -653,6 +653,51 @@ code { background: rgba(255,255,255,0.08); padding: 0.1em 0.4em; border-radius: 
 .prize-split-item.p3 .ps-pct { color: #cd8c52; }
 .prize-split-item .ps-label { font-size: 0.65rem; color: var(--muted); margin-top: 0.15rem; }
 
+
+/* Success overlay mobile fix: keep payment card and submit-another button reachable */
+.success-overlay {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.success-overlay.show {
+  justify-content: flex-start;
+}
+.success-overlay .again-btn {
+  margin: 1rem 0 2rem;
+  flex-shrink: 0;
+}
+@media (max-width: 480px) {
+  .success-overlay {
+    padding: 1.5rem 1rem 3rem;
+  }
+  .success-overlay .big-emoji {
+    font-size: 3.5rem;
+    margin-bottom: .5rem;
+  }
+  .success-overlay h2 {
+    font-size: 2.35rem;
+  }
+  .success-overlay .entry-summary {
+    margin: 1rem 0;
+  }
+  .success-payment {
+    margin-bottom: 1rem;
+  }
+  .again-btn {
+    width: 100%;
+    max-width: 360px;
+    font-weight: 700;
+    border-color: rgba(56,230,120,.45);
+    background: rgba(13,92,46,.35);
+  }
+}
+
+
+.entry-summary .flag-img {
+  margin-right: .35rem;
+  vertical-align: middle;
+}
+
 </style>
 </head>
 <body>
@@ -859,10 +904,10 @@ const FLAG_CODES = {
   'Algeria':'dz','Argentina':'ar','Australia':'au','Austria':'at','Belgium':'be',
   'Bosnia & Herzegovina':'ba','Brazil':'br','Canada':'ca','Cape Verde':'cv','Colombia':'co',
   'Croatia':'hr','Curaçao':'cw','Czechia':'cz',"Côte d'Ivoire":'ci','DR Congo':'cd',
-  'Ecuador':'ec','Egypt':'eg','France':'fr','Germany':'de','Ghana':'gh',
+  'Ecuador':'ec','Egypt':'eg','England':'gb','France':'fr','Germany':'de','Ghana':'gh',
   'Haiti':'ht','Iran':'ir','Iraq':'iq','Japan':'jp','Jordan':'jo',
   'Mexico':'mx','Morocco':'ma','Netherlands':'nl','New Zealand':'nz','Norway':'no',
-  'Panama':'pa','Paraguay':'py','Portugal':'pt','Qatar':'qa','Saudi Arabia':'sa',
+  'Panama':'pa','Paraguay':'py','Portugal':'pt','Qatar':'qa','Saudi Arabia':'sa','Scotland':'gb',
   'Senegal':'sn','South Africa':'za','South Korea':'kr','Spain':'es','Sweden':'se',
   'Switzerland':'ch','Tunisia':'tn','Türkiye':'tr','United States':'us','Uruguay':'uy',
   'Uzbekistan':'uz'
@@ -1037,7 +1082,7 @@ function showSuccess(payload, p) {
   const labels = ['1st','2nd','3rd','4th','5th','6th','7th','8th'];
   let html = `<div class="row" style="font-family:var(--mono);font-size:0.7rem;color:var(--muted);border-bottom:1px solid var(--border);padding-bottom:0.4rem;margin-bottom:0.1rem"><span>${payload.name} — Entry #${payload.entryNum}</span></div><div class="row" style="font-family:var(--mono);font-size:0.7rem;color:var(--muted)"><span>${payload.email}</span></div>`;
   p.forEach((t,i) => {
-    html += `<div class="row"><span class="team">${labels[i]} · ${t}</span><span class="pts">${PTS[i]}pt/win</span></div>`;
+    html += `<div class="row"><span class="team">${labels[i]} · ${flagImg(t)} ${t}</span><span class="pts">${PTS[i]}pt/win</span></div>`;
   });
   document.getElementById('entrySummary').innerHTML = html;
   document.getElementById('successOverlay').classList.add('show');

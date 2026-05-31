@@ -795,6 +795,19 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
   }
 }
 
+
+/* England / Scotland mobile flag fix */
+@media(max-width:640px){
+  .flag-hybrid.subdivision-flag .flag-img{
+    display:block!important;
+    width:22px!important;
+    height:16px!important;
+  }
+  .flag-hybrid.subdivision-flag .flag-emoji{
+    display:none!important;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -1055,7 +1068,7 @@ function flag(t){
       ? 'https://flagcdn.com/48x36/gb-sct.png'
       : `https://flagcdn.com/48x36/${imgCode}.png`;
 
-  return `<span class="flag-hybrid" title="${name}">
+  return `<span class="flag-hybrid ${code.startsWith('GB-') ? 'subdivision-flag' : ''}" title="${name}">
     <img class="flag-img" src="${imgSrc}" srcset="${imgSrc2x} 2x" alt="${name} flag" loading="lazy">
     <span class="flag-emoji">${emoji}</span>
   </span>`;

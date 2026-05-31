@@ -264,7 +264,7 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
       <p class="header-sub">FIFA World Cup 2026 · Pool Leaderboard</p>
     </div>
     <div class="last-updated">
-      <div><span class="live-dot"></span>LAST UPDATED</div>
+      <div><span class="live-dot"></span>RESULTS UPDATED</div>
       <div class="ts" id="lastUpdatedTime">—</div>
       <div style="margin-top:0.25rem">Auto-refreshes every 5 min</div>
     </div>
@@ -391,6 +391,7 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
 <script>
 // ── CONFIG ────────────────────────────────────────────────────────────────────
 const STANDINGS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vShrmffhqCtYpQdrYUJUwDGHfFeRUAAgw9scgVMiJIEk2kobUvGK_HIn1Tf6xYbtmSrfdAzImOq_fB7/pub?gid=1226909377&single=true&output=csv';
+const RESULTS_UPDATED_COLUMN = 'M'; // M2 should contain =Results!G1
 const ENTRY_FEE   = 100;
 const CURRENCY    = 'kr';
 const PRIZE_SPLIT = { first:75, second:20, third:5 };
@@ -753,6 +754,9 @@ function showLoadError(message, rawPreview){
     '</pre>' : '');
 }
 
+
+
+
 async function loadData(){
   if (STANDINGS_CSV_URL === 'YOUR_PUBLISHED_CSV_URL') {
     showLoadError('STANDINGS_CSV_URL is not configured.', '');
@@ -803,6 +807,7 @@ async function loadData(){
       const elimTeamsText = cellByHeader(c, headers, ['ElimTeams', 'Elim Teams', 'Eliminated Teams'], 6);
       const mathElimText = cellByHeader(c, headers, ['MathElim', 'Math Elim', 'Mathematically Eliminated'], 7);
       const paidText = cellByHeader(c, headers, ['Paid', 'Payment Status'], -1);
+      const resultsUpdated = cellByHeader(c, headers, ['Results Updated', 'Last Results Update'], -1);
 
       return {
         name,
@@ -815,11 +820,13 @@ async function loadData(){
         mathElim: yesNo(mathElimText),
         thirdPlaceWinner: '',
         thirdPlaceBonus: false,
+        resultsUpdated,
       };
     }).filter(e => e.name);
 
+    const resultsUpdated = allEntries.find(e => e.resultsUpdated)?.resultsUpdated || '';
     document.getElementById('lastUpdatedTime').textContent =
-      new Date().toLocaleString('sv-SE', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'});
+      resultsUpdated || 'Not set';
 
     updateLeaderCard(allEntries);
     renderStats(allEntries);

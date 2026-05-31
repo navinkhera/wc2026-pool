@@ -796,15 +796,23 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
 }
 
 
-/* England / Scotland mobile flag fix */
+
+
+
+/* Mobile: England and Scotland use GB emoji, same sizing as other emoji flags */
 @media(max-width:640px){
+  .flag-hybrid.subdivision-flag{
+    width:auto!important;
+    height:auto!important;
+    overflow:visible!important;
+  }
   .flag-hybrid.subdivision-flag .flag-img{
-    display:block!important;
-    width:22px!important;
-    height:16px!important;
+    display:none!important;
   }
   .flag-hybrid.subdivision-flag .flag-emoji{
-    display:none!important;
+    display:inline-flex!important;
+    font-size:1.1rem!important;
+    line-height:1!important;
   }
 }
 
@@ -1041,8 +1049,8 @@ function normalizeTeamName(t){
 
 function codeToFlagEmoji(code){
   if(!code) return '';
-  if(code === 'GB-ENG') return '🏴';
-  if(code === 'GB-SCT') return '🏴󠁧󠁢󠁳󠁣󠁴󠁿';
+  if(code === 'GB-ENG') return '🇬🇧';
+  if(code === 'GB-SCT') return '🇬🇧';
   if(code.length !== 2) return '';
   return code
     .toUpperCase()

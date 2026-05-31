@@ -36,6 +36,14 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
 @keyframes livePulse{0%,100%{box-shadow:0 0 0 0 rgba(77,255,136,0.4)}50%{box-shadow:0 0 0 5px rgba(77,255,136,0)}}
 
 /* STATS */
+/* COMPACT SUMMARY STRIP */
+.summary-strip{grid-template-columns:repeat(4,1fr);gap:.55rem;margin:0 0 1rem!important}
+.summary-strip .stat-card{padding:.7rem .85rem;border-radius:12px}
+.summary-strip .sc-label{font-size:.52rem;margin-bottom:.25rem}
+.summary-strip .sc-value{font-size:1.55rem}
+.summary-strip .sc-sub{font-size:.64rem}
+@media(max-width:640px){.summary-strip{grid-template-columns:repeat(2,1fr)}}
+
 .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:0.75rem;margin-bottom:1rem;animation:fadeUp 0.7s 0.1s ease both}
 .stat-card{background:var(--s0);border:1px solid var(--border);border-radius:14px;padding:1rem;transition:background 0.2s}
 .stat-card:hover{background:var(--s1)}
@@ -89,7 +97,7 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
 
 
 /* CURRENT LEADER CARD */
-.leader-card{margin:1.25rem 0;padding:1.25rem 1.5rem;border-radius:18px;background:linear-gradient(135deg,rgba(240,192,64,.16),rgba(13,92,46,.12));border:1px solid rgba(240,192,64,.34);box-shadow:0 0 32px rgba(240,192,64,.06);animation:fadeUp .7s .24s ease both}
+.leader-card{margin:0 0 1rem;padding:1.25rem 1.5rem;border-radius:18px;background:linear-gradient(135deg,rgba(240,192,64,.16),rgba(13,92,46,.12));border:1px solid rgba(240,192,64,.34);box-shadow:0 0 32px rgba(240,192,64,.06);animation:fadeUp .7s .24s ease both}
 .leader-kicker{font-family:var(--mono);font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:.75rem}
 .leader-main{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
 .leader-name{font-size:1.7rem;font-weight:700;line-height:1.1}
@@ -138,6 +146,13 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
 .rule-mini span{font-family:var(--mono);font-size:.7rem;color:var(--muted);text-align:right}
 .rules-note{display:flex;flex-wrap:wrap;gap:.5rem;margin:0 0 .85rem}
 .rules-note span{border:1px solid var(--border);background:rgba(255,255,255,.035);border-radius:999px;padding:.28rem .65rem;font-family:var(--mono);font-size:.65rem;color:var(--muted)}
+
+.prize-split-inline{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.5rem;margin-bottom:.25rem}
+.prize-split-inline div{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:.7rem;text-align:center}
+.prize-split-inline strong{display:block;color:var(--text);font-family:var(--mono);font-size:.62rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.25rem}
+.prize-split-inline span{font-family:'Anton',sans-serif;color:var(--gold);font-size:1.35rem}
+@media(max-width:640px){.prize-split-inline{grid-template-columns:1fr}}
+
 @media(max-width:640px){.rules-grid{grid-template-columns:1fr}.rule-mini{align-items:flex-start}.rule-mini span{text-align:left}}
 
 /* TABLE */
@@ -254,8 +269,26 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
       <div style="margin-top:0.25rem">Auto-refreshes every 5 min</div>
     </div>
   </div>
+</div>
 
-  <div class="stats-row">
+  <div class="leader-card" id="leaderCard">
+    <div class="leader-kicker">🏆 Current Leader</div>
+    <div class="leader-main">
+      <div>
+        <div class="leader-name" id="leaderName">—</div>
+        <div class="leader-entry" id="leaderMeta">—</div>
+        <div class="leader-flags" id="leaderFlags"></div>
+      </div>
+      <div class="leader-stats">
+        <div><span id="leaderScore">—</span><small>pts</small></div>
+        <div><span id="leaderPotential">—</span><small>max still achievable</small></div>
+      </div>
+    </div>
+  </div>
+
+
+
+  <div class="stats-row summary-strip">
     <div class="stat-card gold">
       <div class="sc-label">🏆 Prize Pot</div>
       <div class="sc-value" id="statPot">—</div>
@@ -277,38 +310,8 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
       <div class="sc-sub">mathematically out</div>
     </div>
   </div>
-
-  <div class="prize-banner">
-    <div class="prize-left">
-      <div class="plabel">💰 Current Prize Pot</div>
-      <div class="amount" id="prizeAmount">—</div>
-      <div class="amount-sub" id="prizeAmountSub">based on paid entries</div>
-    </div>
-    <div class="prize-right">
-      <div class="plabel">Prize breakdown</div>
-      <div class="prize-breakdown">
-        <div class="prize-place p1"><div class="pl">1st place</div><div class="pa" id="prize1">—</div></div>
-        <div class="prize-place p2"><div class="pl">2nd place</div><div class="pa" id="prize2">—</div></div>
-        <div class="prize-place p3"><div class="pl">3rd place</div><div class="pa" id="prize3">—</div></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="leader-card" id="leaderCard">
-    <div class="leader-kicker">🏆 Current Leader</div>
-    <div class="leader-main">
-      <div>
-        <div class="leader-name" id="leaderName">—</div>
-        <div class="leader-entry" id="leaderMeta">—</div>
-        <div class="leader-flags" id="leaderFlags"></div>
-      </div>
-      <div class="leader-stats">
-        <div><span id="leaderScore">—</span><small>pts</small></div>
-        <div><span id="leaderPotential">—</span><small>max still achievable</small></div>
-      </div>
-    </div>
-  </div>
-
+</div>
+  
   <div class="filters">
     <button class="filter-btn active" onclick="setFilter('all',this)">All entries</button>
     <button class="filter-btn" onclick="setFilter('alive',this)">🔥 Still alive</button>
@@ -359,6 +362,14 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
 
       <h3 style="margin:1.25rem 0 .75rem 0;color:var(--gold)">🥉 3rd Place Bonus</h3>
       <p>If your <strong>Pick 3</strong> wins the World Cup 3rd-place match, you earn an additional <strong>4 bonus points</strong>.</p>
+
+
+      <h3 style="margin:1.25rem 0 .75rem 0;color:var(--gold)">Prize Breakdown</h3>
+      <div class="prize-split-inline">
+        <div><strong>1st place</strong><span>75%</span></div>
+        <div><strong>2nd place</strong><span>20%</span></div>
+        <div><strong>3rd place</strong><span>5%</span></div>
+      </div>
 
       <h3 style="margin:1.25rem 0 .75rem 0;color:var(--gold)">Status Indicators</h3>
 
@@ -490,6 +501,7 @@ const DEMO = [
 ];
 
 function fmt(n){ return n.toLocaleString('sv-SE')+'\u00a0'+CURRENCY }
+function setText(id, value){ const el=document.getElementById(id); if(el) el.textContent=value; }
 
 function computeAlive(entries){
   const sorted = [...entries].sort((a,b)=>b.score-a.score);
@@ -560,19 +572,19 @@ function renderStats(entries){
   const leader = withAlive[0];
   updateLeaderCard(entries);
 
-  document.getElementById('statPot').textContent     = fmt(pot);
-  document.getElementById('statPotSub').textContent  = `${paid} of ${entries.length} paid`;
-  document.getElementById('statEntries').textContent = entries.length;
-  document.getElementById('statPaid').textContent    = `${paid} paid · ${entries.length-paid} pending`;
-  document.getElementById('statAlive').textContent   = alive;
-  document.getElementById('statAliveSub').textContent= alive===1?'only one left!':'can still win';
-  document.getElementById('statElim').textContent    = elim;
+  setText('statPot', fmt(pot));
+  setText('statPotSub', `${paid} of ${entries.length} paid`);
+  setText('statEntries', entries.length);
+  setText('statPaid', `${paid} paid · ${entries.length-paid} pending`);
+  setText('statAlive', alive);
+  setText('statAliveSub', alive===1?'only one left!':'can still win');
+  setText('statElim', elim);
 
-  document.getElementById('prizeAmount').textContent   = fmt(pot);
-  document.getElementById('prizeAmountSub').textContent= `${paid} paid entries × ${ENTRY_FEE} ${CURRENCY}`;
-  document.getElementById('prize1').textContent = fmt(Math.floor(pot*PRIZE_SPLIT.first/100));
-  document.getElementById('prize2').textContent = fmt(Math.floor(pot*PRIZE_SPLIT.second/100));
-  document.getElementById('prize3').textContent = fmt(Math.floor(pot*PRIZE_SPLIT.third/100));
+  setText('prizeAmount', fmt(pot));
+  setText('prizeAmountSub', `${paid} paid entries × ${ENTRY_FEE} ${CURRENCY}`);
+  setText('prize1', fmt(Math.floor(pot*PRIZE_SPLIT.first/100)));
+  setText('prize2', fmt(Math.floor(pot*PRIZE_SPLIT.second/100)));
+  setText('prize3', fmt(Math.floor(pot*PRIZE_SPLIT.third/100)));
 
   const explainer = document.getElementById('elimExplainer');
   if(leader && explainer){

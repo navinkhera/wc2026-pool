@@ -199,6 +199,100 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
 .is-elim .entry-name{color:var(--muted)}
 .name-cell .entry-id{font-family:var(--mono);font-size:0.72rem;color:var(--muted);margin-top:0.2rem}
 
+
+/* DESKTOP FLAG-ONLY TEAM PILLS */
+.team-tag.flag-only{
+  width:30px;
+  height:24px;
+  padding:0;
+  justify-content:center;
+  gap:0;
+}
+.team-tag.flag-only .team-name-text{display:none}
+.team-tag.flag-only .flag-img{
+  width:22px;
+  height:16px;
+}
+
+/* MOBILE STANDINGS CARDS */
+@media(max-width:640px){
+  .page{padding:0 1rem 4rem}
+  .header{align-items:flex-start;padding:2rem 0 1rem}
+  .last-updated{text-align:left;width:100%;margin-top:.75rem}
+
+  .leader-card{padding:1rem;margin-bottom:.75rem}
+  .leader-name{font-size:1.45rem}
+  .leader-stats{width:100%;display:grid;grid-template-columns:1fr 1fr}
+  .leader-stats>div{min-width:0;text-align:left}
+  .leader-stats small{font-size:.5rem}
+  .leader-flags{gap:.28rem}
+  .leader-flag{width:24px;height:20px}
+  .leader-flag img{width:20px;height:15px}
+
+  .summary-strip{grid-template-columns:repeat(2,1fr)!important}
+  .summary-strip .stat-card{padding:.65rem .75rem}
+  .summary-strip .sc-value{font-size:1.4rem}
+
+  .filters{display:grid;grid-template-columns:repeat(3,1fr);gap:.45rem}
+  .filter-btn{font-size:.58rem;padding:.5rem .35rem}
+  .search-wrap{grid-column:1 / -1;max-width:none;width:100%}
+
+  .standings-wrap{overflow-x:visible}
+  .standings-table{min-width:0;width:100%;border-spacing:0 .75rem}
+  .standings-table thead{display:none}
+  .standings-table,
+  .standings-table tbody,
+  .entry-row,
+  .entry-row td{display:block;width:100%}
+
+  .entry-row{
+    position:relative;
+    padding:1rem;
+    border-radius:16px;
+    outline:1px solid var(--border);
+  }
+  .entry-row td{
+    padding:0;
+    border-radius:0!important;
+    border-left:none!important;
+  }
+  .entry-row td:first-child{position:absolute;left:1rem;top:1rem}
+  .entry-row .status-cell{position:absolute;left:4.4rem;top:1.05rem;width:auto;text-align:left}
+  .entry-row .name-cell{padding-left:7rem;min-height:3.4rem;margin-bottom:.75rem}
+  .entry-row .entry-name{font-size:1.35rem;line-height:1.15}
+  .entry-row .entry-id{font-size:.68rem}
+
+  .teams-cell{
+    display:flex!important;
+    flex-wrap:wrap;
+    gap:.35rem;
+    max-width:none;
+    margin:.65rem 0 .85rem;
+    padding-left:0;
+  }
+  .team-tag.flag-only{
+    width:30px;
+    height:24px;
+  }
+  .team-tag.flag-only .team-name-text{display:none!important}
+
+  .score-cell{
+    display:inline-block!important;
+    width:48%!important;
+    text-align:left;
+    vertical-align:top;
+  }
+  .potential-cell{
+    display:inline-block!important;
+    width:48%!important;
+    text-align:right;
+    vertical-align:top;
+  }
+  .actual-score{font-size:1.8rem}
+  .potential-val{font-size:1.2rem}
+  .gap-label{font-size:.62rem}
+}
+
 /* TEAMS */
 .teams-cell{max-width:260px}
 .team-tag{display:inline-flex;align-items:center;gap:0.25rem;
@@ -281,7 +375,7 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
       </div>
       <div class="leader-stats">
         <div><span id="leaderScore">—</span><small>pts</small></div>
-        <div><span id="leaderPotential">—</span><small>max still achievable</small></div>
+        <div><span id="leaderPotential">—</span><small>max</small></div>
       </div>
     </div>
   </div>
@@ -330,7 +424,7 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
           <th>Entrant</th>
           <th>Teams</th>
           <th class="num">Score</th>
-          <th class="num">Max Still Achievable</th>
+          <th class="num">Max</th>
         </tr>
       </thead>
       <tbody id="standingsBody"></tbody>
@@ -391,7 +485,6 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
 <script>
 // ── CONFIG ────────────────────────────────────────────────────────────────────
 const STANDINGS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vShrmffhqCtYpQdrYUJUwDGHfFeRUAAgw9scgVMiJIEk2kobUvGK_HIn1Tf6xYbtmSrfdAzImOq_fB7/pub?gid=1226909377&single=true&output=csv';
-const RESULTS_UPDATED_COLUMN = 'M'; // M2 should contain =Results!G1
 const ENTRY_FEE   = 100;
 const CURRENCY    = 'kr';
 const PRIZE_SPLIT = { first:75, second:20, third:5 };
@@ -628,8 +721,8 @@ function renderTable(){
       if(!isElim && isPick3rd && !isPick1) cls += ' pick3rd';
       const bongeTag = (isPick3rd && e.thirdPlaceBonus && !isElim)
         ? `<span class="bonus-badge">+4 🥉</span>` : '';
-      return `<span class="team-tag ${cls}" title="Pick ${i+1} · ${PTS[i]}pt/win${isElim?' · ELIMINATED':' · still in'}${isPick3rd?' · 3rd place bonus slot':''}">
-        ${flag(displayTeam)} ${displayTeam}</span>${bongeTag}`;
+      return `<span class="team-tag flag-only ${cls}" title="Pick ${i+1}: ${displayTeam} · ${PTS[i]}pt/win${isElim?' · ELIMINATED':' · still in'}${isPick3rd?' · 3rd place bonus slot':''}">
+        ${flag(displayTeam)}<span class="team-name-text">${displayTeam}</span></span>${bongeTag}`;
     }).join('');
 
     const gapText = e.isLeader

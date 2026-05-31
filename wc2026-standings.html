@@ -1129,7 +1129,7 @@ function updateLeaderCard(entries){
   const totalTeams = (leader.teams || []).length;
 
   nameEl.textContent = leader.name || '—';
-  metaEl.textContent = `Entry #${leader.entryNum || '—'} • ${aliveTeams}/${totalTeams} teams alive`;
+  metaEl.textContent = `${aliveTeams}/${totalTeams} teams alive`;
   scoreEl.textContent = leader.score ?? '—';
   potentialEl.textContent = leader.potential ?? '—';
 
@@ -1169,7 +1169,7 @@ function renderStats(entries){
   const explainer = document.getElementById('elimExplainer');
   if(leader && explainer){
     explainer.textContent =
-      `An entry is eliminated when its max still achievable score can no longer beat the current leader's score of ${leader.score} pts (${leader.name}, Entry #${leader.entryNum}).`;
+      `An entry is eliminated when its max still achievable score can no longer beat the current leader's score of ${leader.score} pts (${leader.name}, ).`;
   }
 }
 
@@ -1227,7 +1227,6 @@ function renderTable(){
       <td class="status-cell"><span class="status-icon">${statusIcon}</span></td>
       <td class="name-cell">
         <div class="entry-name">${e.name}</div>
-        <div class="entry-id">Entry #${e.entryNum}</div>
       </td>
       <td class="teams-cell">${teamTags}</td>
       <td class="score-cell">

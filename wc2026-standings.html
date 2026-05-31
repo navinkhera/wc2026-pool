@@ -869,6 +869,52 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
   color: rgba(238,244,240,0.62) !important;
 }
 
+
+/* Match entry-page hero treatment */
+.header-left .hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--mono);
+  font-size: 1.2rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold);
+  background: rgba(240,192,64,0.1);
+  border: 1px solid rgba(240,192,64,0.25);
+  padding: 0.55rem 1.15rem;
+  border-radius: 100px;
+  margin-bottom: 1.2rem;
+}
+.header-left .hero-eyebrow::before {
+  content: '●';
+  font-size: 0.5rem;
+  animation: livePulse 2s infinite;
+}
+.header-left h1 {
+  font-size: clamp(3.2rem,10vw,6.2rem) !important;
+}
+@media (max-width: 480px) {
+  .header-left .hero-eyebrow {
+    font-size: 1rem;
+    letter-spacing: 0.13em;
+  }
+}
+
+
+/* Header order polish */
+.header-left .hero-eyebrow {
+  margin-bottom: 1.35rem !important;
+}
+.header-left h1 {
+  margin-top: 0 !important;
+}
+@media(max-width:640px){
+  .header-left .hero-eyebrow {
+    margin-bottom: 1rem !important;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -878,8 +924,8 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
 
   <div class="header">
     <div class="header-left">
+      <div class="hero-eyebrow">FIFA World Cup 2026 · Pool</div>
       <h1>LIVE<em>STANDINGS</em></h1>
-      <p class="header-sub">FIFA World Cup 2026 · Pool Leaderboard</p>
     </div>
     <div class="last-updated">
       <div><span class="live-dot"></span>RESULTS UPDATED</div>

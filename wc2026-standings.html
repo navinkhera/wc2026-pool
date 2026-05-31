@@ -117,6 +117,32 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
 .leader-main{position:relative;z-index:1}
 
 
+
+/* SIMPLIFIED FILTERS */
+.filters{align-items:center}
+.filters .filter-btn{min-width:120px}
+@media(max-width:640px){
+  .filters{
+    display:grid!important;
+    grid-template-columns:auto 1fr!important;
+    gap:.5rem!important;
+    margin-bottom:.6rem!important;
+  }
+  .filters .filter-btn{
+    min-width:0;
+    width:100%;
+    font-size:.58rem!important;
+    padding:.48rem .5rem!important;
+  }
+  .search-wrap{
+    display:block!important;
+    grid-column:auto!important;
+    max-width:none!important;
+    width:100%!important;
+  }
+  .search-wrap input{height:38px;font-size:.78rem}
+}
+
 /* FILTERS */
 .filters{display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1rem;animation:fadeUp 0.7s 0.25s ease both}
 .filter-btn{background:var(--s0);border:1px solid var(--border);color:var(--muted);border-radius:8px;
@@ -528,6 +554,42 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
   .leader-stats small{font-size:.48rem}
 }
 
+
+/* MOBILE ONE-LINE SUMMARY */
+@media(max-width:640px){
+  .summary-strip{
+    display:grid!important;
+    grid-template-columns:repeat(4,1fr)!important;
+    gap:.35rem!important;
+    margin:.7rem 0 .7rem!important;
+  }
+  .summary-strip .stat-card{
+    padding:.45rem .35rem!important;
+    border-radius:10px!important;
+    min-height:58px;
+    text-align:center;
+  }
+  .summary-strip .sc-label{
+    font-size:.42rem!important;
+    letter-spacing:.08em!important;
+    margin-bottom:.14rem!important;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .summary-strip .sc-value{
+    font-size:1.05rem!important;
+    line-height:1!important;
+  }
+  .summary-strip .sc-sub{
+    font-size:.48rem!important;
+    margin-top:.1rem!important;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -591,8 +653,6 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
   
   <div class="filters">
     <button class="filter-btn active" onclick="setFilter('all',this)">All entries</button>
-    <button class="filter-btn" onclick="setFilter('alive',this)">🔥 Still alive</button>
-    <button class="filter-btn" onclick="setFilter('elim',this)">💀 Eliminated</button>
     <div class="search-wrap">
       <input type="text" id="searchInput" placeholder="Search by name…" oninput="renderTable()">
     </div>

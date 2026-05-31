@@ -13,7 +13,7 @@
   --elim-glow:rgba(255,255,255,0.02);--elim-border:rgba(255,255,255,0.05);
   --ink:#07100a;--s0:rgba(255,255,255,0.03);--s1:rgba(255,255,255,0.06);--s2:rgba(255,255,255,0.10);
   --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.15);
-  --text:#eef4f0;--muted:rgba(238,244,240,0.38);--mono:'DM Mono',monospace;
+  --text:#eef4f0;--muted:rgba(238,244,240,0.82);--mono:'DM Mono',monospace;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
@@ -814,6 +814,59 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
     font-size:1.1rem!important;
     line-height:1!important;
   }
+}
+
+
+
+/* Strong readability boost for secondary text */
+.header-sub,
+.last-updated,
+.last-updated div,
+.sc-label,
+.sc-sub,
+.leader-entry,
+.leader-stats small,
+.search-wrap input::placeholder,
+.rules-content,
+.rules-content p,
+.rules-note span,
+.rule-mini span,
+.empty-state,
+.empty-state p,
+.pts-label,
+.gap-label,
+.prize-place .pl,
+.prize-left .amount-sub,
+.prize-right .plabel,
+.standings-table thead th,
+.filter-btn,
+.legend-pill,
+.elim-bar,
+.rule-banner,
+.potential-cell .gap-label {
+  color: rgba(238,244,240,0.82) !important;
+}
+
+.rules-content,
+.rules-content p,
+.rule-mini span,
+.sc-sub,
+.header-sub {
+  line-height: 1.6;
+}
+
+.search-wrap::before {
+  color: rgba(238,244,240,0.75) !important;
+}
+
+.entry-row.is-elim {
+  opacity: 0.62;
+}
+
+.entry-row.is-elim .entry-name,
+.entry-row.is-elim .actual-score,
+.entry-row.is-elim .potential-val {
+  color: rgba(238,244,240,0.62) !important;
 }
 
 </style>

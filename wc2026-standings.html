@@ -302,7 +302,7 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
   cursor:default}
 .team-tag:hover{background:var(--s2)}
 .team-tag .tf{font-size:0.85em;line-height:1}
-.flag-img{width:18px;height:13px;object-fit:cover;border-radius:2px;box-shadow:0 0 0 1px rgba(255,255,255,0.15);flex-shrink:0}
+.flag-img{width:18px;height:13px;object-fit:cover;border-radius:2px;box-shadow:0 0 0 1px rgba(255,255,255,0.15);flex-shrink:0}.flag-fallback{font-family:var(--mono);font-size:.58rem;color:var(--gold)}
 .team-tag.elim-team{text-decoration:line-through;opacity:0.38}
 .team-tag.still-in{border-color:rgba(56,230,120,0.28);color:rgba(200,255,220,0.85)}
 .team-tag.pick1{border-color:rgba(240,192,64,0.38);color:var(--gold)}
@@ -542,12 +542,49 @@ const FLAGS = {
   'Uzbekistan':'uz'
 };
 
+
+function normalizeTeamName(t){
+  t = String(t || '').trim();
+
+  const mappings = {
+    'CD DR Congo':'DR Congo',
+    'JO Jordan':'Jordan',
+    'SE Sweden':'Sweden',
+    'CA Canada':'Canada',
+    'BR Brazil':'Brazil',
+    'HT Haiti':'Haiti',
+    'DE Germany':'Germany',
+    'FR France':'France',
+    'PT Portugal':'Portugal',
+    'CZ Czechia':'Czechia',
+    'BA Bosnia & Herzegovina':'Bosnia & Herzegovina',
+    'NZ New Zealand':'New Zealand',
+    'US United States':'United States',
+    'HR Croatia':'Croatia',
+    'AT Austria':'Austria',
+    'BE Belgium':'Belgium',
+    'AU Australia':'Australia',
+    'CW Curaçao':'Curaçao',
+    'EC Ecuador':'Ecuador',
+    'IQ Iraq':'Iraq'
+  };
+
+  if (mappings[t]) return mappings[t];
+
+  // If a value arrives as "XX Team Name", strip XX only when Team Name exists in FLAGS.
+  const withoutPrefix = t.replace(/^[A-Z]{2}\s+/, '').trim();
+  if (FLAGS[withoutPrefix]) return withoutPrefix;
+
+  return t;
+}
+
 function flag(t){
-  const name = (t || '').trim();
+  const name = normalizeTeamName(t);
   const code = FLAGS[name];
   if (!code) return '';
   return `<img class="flag-img" src="https://flagcdn.com/24x18/${code}.png" srcset="https://flagcdn.com/48x36/${code}.png 2x" alt="${name} flag" loading="lazy">`;
 }
+
 
 const PTS = [10,9,8,8,6,4,2,1];
 
@@ -638,8 +675,8 @@ function updateLeaderCard(entries){
     return;
   }
 
-  const eliminated = new Set((leader.elimTeams || []).map(t => String(t || '').trim()));
-  const aliveTeams = (leader.teams || []).filter(t => !eliminated.has(String(t || '').trim())).length;
+  const eliminated = new Set((leader.elimTeams || []).map(t => normalizeTeamName(t)));
+  const aliveTeams = (leader.teams || []).filter(t => !eliminated.has(normalizeTeamName(t))).length;
   const totalTeams = (leader.teams || []).length;
 
   nameEl.textContent = leader.name || '—';
@@ -649,10 +686,10 @@ function updateLeaderCard(entries){
 
   if(flagsEl){
     flagsEl.innerHTML = (leader.teams || []).map(team => {
-      const clean = String(team || '').trim();
+      const clean = normalizeTeamName(team);
       const isElim = eliminated.has(clean);
       const f = flag(clean);
-      return `<span class="leader-flag ${isElim ? 'elim' : ''}" title="${clean}${isElim ? ' — eliminated' : ''}">${f || clean.slice(0,2)}</span>`;
+      return `<span class="leader-flag ${isElim ? 'elim' : ''}" title="${clean}${isElim ? ' — eliminated' : ''}">${f || `<span class="flag-fallback">${clean.slice(0,2).toUpperCase()}</span>`}</span>`;
     }).join('');
   }
 }
@@ -712,8 +749,8 @@ function renderTable(){
     const statusIcon  = e.isLeader?'👑':e.isAlive?'🔥':'💀';
 
     const teamTags = e.teams.map((t,i)=>{
-      const displayTeam = (t || '').trim();
-      const isElim = e.elimTeams?.map(x => (x || '').trim()).includes(displayTeam);
+      const displayTeam = normalizeTeamName(t);
+      const isElim = e.elimTeams?.map(x => normalizeTeamName(x)).includes(displayTeam);
       const isPick1 = i===0;
       const isPick3rd = i===2; // slot 3 = index 2 = 3rd place bonus slot
       let cls = isElim ? 'elim-team' : 'still-in';
@@ -722,7 +759,7 @@ function renderTable(){
       const bongeTag = (isPick3rd && e.thirdPlaceBonus && !isElim)
         ? `<span class="bonus-badge">+4 🥉</span>` : '';
       return `<span class="team-tag flag-only ${cls}" title="Pick ${i+1}: ${displayTeam} · ${PTS[i]}pt/win${isElim?' · ELIMINATED':' · still in'}${isPick3rd?' · 3rd place bonus slot':''}">
-        ${flag(displayTeam)}<span class="team-name-text">${displayTeam}</span></span>${bongeTag}`;
+        ${flag(displayTeam) || `<span class="flag-fallback">${displayTeam.slice(0,2).toUpperCase()}</span>`}<span class="team-name-text">${displayTeam}</span></span>${bongeTag}`;
     }).join('');
 
     const gapText = e.isLeader

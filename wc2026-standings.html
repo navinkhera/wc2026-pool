@@ -560,8 +560,9 @@ function renderStats(entries){
   document.getElementById('prize2').textContent = fmt(Math.floor(pot*PRIZE_SPLIT.second/100));
   document.getElementById('prize3').textContent = fmt(Math.floor(pot*PRIZE_SPLIT.third/100));
 
-  if(leader){
-    document.getElementById('elimExplainer').textContent =
+  const explainer = document.getElementById('elimExplainer');
+  if(leader && explainer){
+    explainer.textContent =
       `An entry is eliminated when its max still achievable score can no longer beat the current leader's score of ${leader.score} pts (${leader.name}, Entry #${leader.entryNum}).`;
   }
 }
@@ -716,8 +717,8 @@ function showLoadError(message, rawPreview){
   const debug = document.getElementById('debugStatus');
   if (debug) debug.textContent = message;
   document.getElementById('standingsBody').innerHTML = '';
-  document.getElementById('emptyState').style.display = 'block';
-  document.getElementById('emptyState').innerHTML =
+  if(document.getElementById('emptyState')) document.getElementById('emptyState').style.display = 'block';
+  if(document.getElementById('emptyState')) document.getElementById('emptyState').innerHTML =
     '<div class="icon">⚠️</div>' +
     '<p style="max-width:720px;margin:0 auto;line-height:1.5">Could not load the standings data.<br>' +
     message + '</p>' +

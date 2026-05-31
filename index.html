@@ -19,7 +19,7 @@
   --border: rgba(255,255,255,0.09);
   --border-bright: rgba(255,255,255,0.2);
   --text: #f0f4f1;
-  --muted: rgba(240,244,241,0.45);
+  --muted: rgba(240,244,241,0.72);
   --mono: 'DM Mono', monospace;
 }
 
@@ -698,6 +698,47 @@ code { background: rgba(255,255,255,0.08); padding: 0.1em 0.4em; border-radius: 
   vertical-align: middle;
 }
 
+
+/* Safety: hide the old pick/points strip */
+.points-strip { display: none !important; }
+
+
+/* Readability improvements */
+.payment-note,
+.rule-desc,
+.rules-card p,
+.fee-note,
+.success-payment,
+label,
+.helper-text {
+  line-height: 1.6;
+}
+
+
+/* Stronger readability pass */
+.hero-sub,
+.payment-to,
+.payment-note,
+.rules-intro,
+.rule-desc,
+.deadline,
+.fee-note,
+.success-overlay p,
+.success-payment,
+.field label,
+.card-label,
+.preview-pill,
+.preview-team,
+.progress-label {
+  color: rgba(240,244,241,0.72) !important;
+}
+
+.payment-card .payment-note strong,
+.fee-note strong,
+.success-payment strong {
+  color: var(--gold) !important;
+}
+
 </style>
 </head>
 <body>
@@ -716,7 +757,7 @@ code { background: rgba(255,255,255,0.08); padding: 0.1em 0.4em; border-radius: 
     <div class="pay-line">100 SEK per entry</div>
     <div>to <strong>Navin Khera</strong></div>
     <div class="pay-line">070 691 45 36</div>
-    <div style="margin-top:.5rem">Include your name in the Swish message. Good luck! 🍀🏆</div>
+    <div style="margin-top:.5rem">Good luck! 🍀🏆</div>
   </div>
   <button class="again-btn" onclick="resetForm()">← Submit another entry</button>
 </div>
@@ -726,19 +767,7 @@ code { background: rgba(255,255,255,0.08); padding: 0.1em 0.4em; border-radius: 
   <header class="hero">
     <div class="hero-eyebrow">FIFA World Cup 2026 · Pool</div>
     <h1>PICK YOUR<span class="line2">SQUAD</span></h1>
-    <p class="hero-sub">Select 8 nations in order · Win points for every win · Glory to the top picker</p>
   </header>
-
-  <div class="points-strip">
-    <div class="pt-cell top"><div class="n">Pick 1</div><div class="v">10</div><div class="u">pts/win</div></div>
-    <div class="pt-cell"><div class="n">Pick 2</div><div class="v">9</div><div class="u">pts/win</div></div>
-    <div class="pt-cell"><div class="n">3 &amp; 4</div><div class="v">8</div><div class="u">pts/win</div></div>
-    <div class="pt-cell"><div class="n">Pick 5</div><div class="v">6</div><div class="u">pts/win</div></div>
-    <div class="pt-cell"><div class="n">Pick 6</div><div class="v">4</div><div class="u">pts/win</div></div>
-    <div class="pt-cell"><div class="n">Pick 7</div><div class="v">2</div><div class="u">pts/win</div></div>
-    <div class="pt-cell"><div class="n">Pick 8</div><div class="v">1</div><div class="u">pts/win</div></div>
-  </div>
-
 
   <div class="payment-card">
     <div class="payment-kicker">💰 Entry Fee</div>
@@ -746,7 +775,7 @@ code { background: rgba(255,255,255,0.08); padding: 0.1em 0.4em; border-radius: 
     <div class="payment-to">per entry · Swish to</div>
     <div class="payment-name">Navin Khera</div>
     <div class="payment-number">070 691 45 36</div>
-    <div class="payment-note">Please include your name in the Swish message.<br><strong>Your entry is confirmed once payment is received.</strong></div>
+    <div class="payment-note"><strong>Your entry is confirmed once payment is received.</strong></div>
   </div>
 
   <!-- RULES CARD -->
@@ -839,11 +868,6 @@ code { background: rgba(255,255,255,0.08); padding: 0.1em 0.4em; border-radius: 
       <label>Email</label>
       <input type="email" id="emailInput" placeholder="e.g. marcus@example.com" autocomplete="email" oninput="clearError()">
     </div>
-    <div class="field">
-      <label>Entry Number &nbsp;<span style="text-transform:none;letter-spacing:0;font-size:0.8em">(submitting multiple? number them 1, 2, 3…)</span></label>
-      <input type="text" id="entryInput" placeholder="1" value="1" oninput="clearError()">
-    </div>
-  </div>
 
   <!-- TEAMS CARD -->
   <div class="card" style="animation-delay:0.35s">
@@ -874,7 +898,6 @@ code { background: rgba(255,255,255,0.08); padding: 0.1em 0.4em; border-radius: 
 
   <p class="fee-note">
     Swish <strong>100 SEK per entry</strong> to <strong>Navin Khera · 070 691 45 36</strong><br>
-    Include your name in the message so I know who paid.
   </p>
 
 </div>
@@ -1009,13 +1032,11 @@ function clearError() {
 
 function validate() {
   const n = document.getElementById('nameInput').value.trim();
-  const e = document.getElementById('entryInput').value.trim();
   const email = document.getElementById('emailInput').value.trim();
   const p = picks();
   if (!n) return 'Please enter your name.';
   if (!email) return 'Please enter your email address.';
   if (!/^\S+@\S+\.\S+$/.test(email)) return 'Please enter a valid email address.';
-  if (!e) return 'Please enter an entry number.';
   if (p.some(v=>!v)) return `Please select all 8 teams — you have ${p.filter(Boolean).length} so far.`;
   if (new Set(p).size < 8) return 'Duplicate teams detected — each pick must be a different nation.';
   return null;
@@ -1046,7 +1067,6 @@ async function handleSubmit(e) {
     timestamp: new Date().toISOString(),
     name: document.getElementById('nameInput').value.trim(),
     email: document.getElementById('emailInput').value.trim(),
-    entryNum: document.getElementById('entryInput').value.trim(),
     team1:p[0],team2:p[1],team3:p[2],team4:p[3],
     team5:p[4],team6:p[5],team7:p[6],team8:p[7]
   };
@@ -1080,7 +1100,7 @@ async function handleSubmit(e) {
 function showSuccess(payload, p) {
   // Build summary
   const labels = ['1st','2nd','3rd','4th','5th','6th','7th','8th'];
-  let html = `<div class="row" style="font-family:var(--mono);font-size:0.7rem;color:var(--muted);border-bottom:1px solid var(--border);padding-bottom:0.4rem;margin-bottom:0.1rem"><span>${payload.name} — Entry #${payload.entryNum}</span></div><div class="row" style="font-family:var(--mono);font-size:0.7rem;color:var(--muted)"><span>${payload.email}</span></div>`;
+  let html = `<div class="row" style="font-family:var(--mono);font-size:0.7rem;color:var(--muted);border-bottom:1px solid var(--border);padding-bottom:0.4rem;margin-bottom:0.1rem"><span>${payload.name}</span></div><div class="row" style="font-family:var(--mono);font-size:0.7rem;color:var(--muted)"><span>${payload.email}</span></div>`;
   p.forEach((t,i) => {
     html += `<div class="row"><span class="team">${labels[i]} · ${flagImg(t)} ${t}</span><span class="pts">${PTS[i]}pt/win</span></div>`;
   });
@@ -1090,8 +1110,6 @@ function showSuccess(payload, p) {
 
 function resetForm() {
   document.getElementById('successOverlay').classList.remove('show');
-  const prev = parseInt(document.getElementById('entryInput').value)||1;
-  document.getElementById('entryInput').value = prev + 1;
   for (let i=0;i<8;i++) document.getElementById(`t${i}`).value='';
   onPick();
   document.getElementById('submitBtn').disabled = false;

@@ -1095,7 +1095,15 @@ function fmt(n){ return n.toLocaleString('sv-SE')+'\u00a0'+CURRENCY }
 function setText(id, value){ const el=document.getElementById(id); if(el) el.textContent=value; }
 
 function computeAlive(entries){
-  const sorted = [...entries].sort((a,b)=>b.score-a.score);
+  const sorted = [...entries].sort((a,b)=>{
+    if ((b.score || 0) !== (a.score || 0)) {
+      return (b.score || 0) - (a.score || 0);
+    }
+    if ((b.potential || 0) !== (a.potential || 0)) {
+      return (b.potential || 0) - (a.potential || 0);
+    }
+    return String(a.name || '').localeCompare(String(b.name || ''));
+  });
   const leaderScore = sorted[0]?.score ?? 0;
   return sorted.map((e,i)=>{
     // Use MathElim from Sheet if available, otherwise calculate live

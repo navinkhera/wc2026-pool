@@ -282,7 +282,7 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
 
   <div class="elim-bar">
     <span>ℹ️</span>
-    <span id="elimExplainer">An entry is eliminated when its maximum possible score can no longer beat the current leader's actual score.</span>
+    <span id="elimExplainer">An entry is eliminated when its max still achievable score can no longer beat the current leader's actual score.</span>
   </div>
 
 
@@ -321,16 +321,7 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
           <th class="num">Max Still Achievable</th>
         </tr>
       </thead>
-      
-<div id="leaderCard" style="margin:1rem 0 1.5rem 0;padding:1rem 1.25rem;border-radius:16px;
-background:linear-gradient(135deg,rgba(212,175,55,.18),rgba(212,175,55,.06));
-border:1px solid rgba(212,175,55,.35);text-align:center">
-  <div style="font-size:.9rem;letter-spacing:.08em;opacity:.85">🏆 CURRENT LEADER</div>
-  <div id="leaderName" style="font-size:1.6rem;font-weight:700;margin-top:.25rem">—</div>
-  <div id="leaderMeta" style="opacity:.8">—</div>
-</div>
-
-<tbody id="standingsBody"></tbody>
+      <tbody id="standingsBody"></tbody>
     </table>
     <div class="empty-state" id="emptyState">
       <div class="icon">🔍</div>
@@ -474,29 +465,31 @@ function computeAlive(entries){
 
 
 function updateLeaderCard(entries){
-  const withAlive = computeAlive(entries);
+  const withAlive = computeAlive(entries || []);
   const leader = withAlive[0];
-  updateLeaderCard(entries);
-
   const nameEl = document.getElementById('leaderName');
   const metaEl = document.getElementById('leaderMeta');
   const scoreEl = document.getElementById('leaderScore');
   const potentialEl = document.getElementById('leaderPotential');
 
+  if(!nameEl || !metaEl || !scoreEl || !potentialEl) return;
+
   if(!leader){
-    if(nameEl) nameEl.textContent = '—';
-    if(metaEl) metaEl.textContent = 'No entries yet';
-    if(scoreEl) scoreEl.textContent = '—';
-    if(potentialEl) potentialEl.textContent = '—';
+    nameEl.textContent = '—';
+    metaEl.textContent = 'No entries yet';
+    scoreEl.textContent = '—';
+    potentialEl.textContent = '—';
     return;
   }
 
-  const aliveTeams = (leader.teams || []).filter(t => !(leader.elimTeams || []).includes(t)).length;
+  const eliminated = new Set((leader.elimTeams || []).map(t => String(t || '').trim()));
+  const aliveTeams = (leader.teams || []).filter(t => !eliminated.has(String(t || '').trim())).length;
+  const totalTeams = (leader.teams || []).length;
 
-  if(nameEl) nameEl.textContent = leader.name;
-  if(metaEl) metaEl.textContent = `Entry #${leader.entryNum} • ${aliveTeams}/${(leader.teams || []).length} teams alive`;
-  if(scoreEl) scoreEl.textContent = leader.score;
-  if(potentialEl) potentialEl.textContent = leader.potential;
+  nameEl.textContent = leader.name || '—';
+  metaEl.textContent = `Entry #${leader.entryNum || '—'} • ${aliveTeams}/${totalTeams} teams alive`;
+  scoreEl.textContent = leader.score ?? '—';
+  potentialEl.textContent = leader.potential ?? '—';
 }
 
 function renderStats(entries){
@@ -506,6 +499,7 @@ function renderStats(entries){
   const alive  = withAlive.filter(e=>e.isAlive).length;
   const elim   = withAlive.filter(e=>!e.isAlive).length;
   const leader = withAlive[0];
+  updateLeaderCard(entries);
 
   document.getElementById('statPot').textContent     = fmt(pot);
   document.getElementById('statPotSub').textContent  = `${paid} of ${entries.length} paid`;
@@ -523,7 +517,7 @@ function renderStats(entries){
 
   if(leader){
     document.getElementById('elimExplainer').textContent =
-      `An entry is eliminated when its maximum possible score can no longer beat the current leader's score of ${leader.score} pts (${leader.name}, Entry #${leader.entryNum}).`;
+      `An entry is eliminated when its max still achievable score can no longer beat the current leader's score of ${leader.score} pts (${leader.name}, Entry #${leader.entryNum}).`;
   }
 }
 
@@ -755,6 +749,7 @@ async function loadData(){
     document.getElementById('lastUpdatedTime').textContent =
       new Date().toLocaleString('sv-SE', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'});
 
+    updateLeaderCard(allEntries);
     renderStats(allEntries);
     renderTable();
 

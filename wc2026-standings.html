@@ -290,6 +290,19 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
   .gap-label{font-size:.62rem}
 }
 
+
+/* HYBRID FLAGS: image on desktop, emoji on mobile */
+.flag-hybrid{display:inline-flex;align-items:center;justify-content:center;line-height:1}
+.flag-img{width:18px;height:13px;object-fit:cover;border-radius:2px;box-shadow:0 0 0 1px rgba(255,255,255,0.15);flex-shrink:0}
+.flag-emoji{display:none;font-size:1.05rem;line-height:1}
+.team-tag.flag-only .flag-img{width:22px;height:16px}
+.leader-flag .flag-img{width:22px;height:16px}
+@media(max-width:640px){
+  .flag-img-desktop{display:none!important}
+  .flag-emoji-mobile{display:inline-flex!important;font-size:1.1rem}
+  .leader-flag .flag-emoji-mobile{font-size:1.15rem}
+}
+
 /* TEAMS */
 .teams-cell{max-width:260px}
 .team-tag{display:inline-flex;align-items:center;gap:0.25rem;
@@ -585,7 +598,14 @@ function flag(t){
   const name = normalizeTeamName(t);
   const code = FLAGS[name];
   if (!code) return '';
-  return `<span class="flag-emoji" aria-label="${name} flag">${codeToFlagEmoji(code)}</span>`;
+
+  const lower = code.toLowerCase();
+  const emoji = codeToFlagEmoji(code);
+
+  return `<span class="flag-hybrid" aria-label="${name} flag">
+    <img class="flag-img flag-img-desktop" src="https://flagcdn.com/24x18/${lower}.png" srcset="https://flagcdn.com/48x36/${lower}.png 2x" alt="${name} flag" loading="lazy">
+    <span class="flag-emoji flag-emoji-mobile">${emoji}</span>
+  </span>`;
 }
 
 

@@ -785,9 +785,9 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
 }
 
 
-/* Hide leading/needs-to-lead text on mobile */
+/* Hide only score gap text on mobile; keep the small max label visible */
 @media (max-width: 640px) {
-  .gap-label,
+  .score-cell .gap-label,
   .leader-gap,
   .score-gap,
   .needs-to-lead {

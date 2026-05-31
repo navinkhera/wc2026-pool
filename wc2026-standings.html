@@ -110,7 +110,7 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
 
 .leader-flags{display:flex;flex-wrap:wrap;gap:.38rem;margin-top:.7rem}
 .leader-flag{display:inline-flex;align-items:center;justify-content:center;width:28px;height:22px;border-radius:6px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.10)}
-.leader-flag img{width:22px;height:16px;object-fit:cover;border-radius:2px;box-shadow:0 0 0 1px rgba(255,255,255,.12)}
+.leader-flag .flag-emoji{font-size:1.05rem}
 .leader-flag.elim{opacity:.35;filter:grayscale(1);text-decoration:line-through}
 .leader-card{position:relative;overflow:hidden}
 .leader-card::after{content:'';position:absolute;inset:auto -10% -65% -10%;height:120%;background:radial-gradient(ellipse at center,rgba(240,192,64,.12),transparent 60%);pointer-events:none}
@@ -209,10 +209,7 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
   gap:0;
 }
 .team-tag.flag-only .team-name-text{display:none}
-.team-tag.flag-only .flag-img{
-  width:22px;
-  height:16px;
-}
+.team-tag.flag-only .flag-emoji{font-size:1.05rem;line-height:1;display:inline-flex;align-items:center;justify-content:center}
 
 /* MOBILE STANDINGS CARDS */
 @media(max-width:640px){
@@ -227,7 +224,7 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
   .leader-stats small{font-size:.5rem}
   .leader-flags{gap:.28rem}
   .leader-flag{width:24px;height:20px}
-  .leader-flag img{width:20px;height:15px}
+  .leader-flag .flag-emoji{font-size:1.05rem}
 
   .summary-strip{grid-template-columns:repeat(2,1fr)!important}
   .summary-strip .stat-card{padding:.65rem .75rem}
@@ -302,7 +299,7 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
   cursor:default}
 .team-tag:hover{background:var(--s2)}
 .team-tag .tf{font-size:0.85em;line-height:1}
-.flag-img{width:18px;height:13px;object-fit:cover;border-radius:2px;box-shadow:0 0 0 1px rgba(255,255,255,0.15);flex-shrink:0}.flag-fallback{font-family:var(--mono);font-size:.58rem;color:var(--gold)}
+.flag-emoji{font-size:1.05rem;line-height:1;display:inline-flex;align-items:center;justify-content:center}.flag-fallback{font-family:var(--mono);font-size:.58rem;color:var(--gold)}
 .team-tag.elim-team{text-decoration:line-through;opacity:0.38}
 .team-tag.still-in{border-color:rgba(56,230,120,0.28);color:rgba(200,255,220,0.85)}
 .team-tag.pick1{border-color:rgba(240,192,64,0.38);color:var(--gold)}
@@ -491,57 +488,57 @@ const PRIZE_SPLIT = { first:75, second:20, third:5 };
 const REFRESH_MS  = 5 * 60 * 1000;
 // ─────────────────────────────────────────────────────────────────────────────
 
-// Flag image map. Uses FlagCDN images instead of emoji, avoiding GitHub/encoding issues.
+// Flag code map. Flags are generated in JavaScript, so there are no external image requests
+// and no emoji copy/paste/encoding issues.
 const FLAGS = {
-  'DR Congo':'cd',
-  'Jordan':'jo',
-  'Sweden':'se',
-  'Canada':'ca',
-  'Brazil':'br',
-  'Haiti':'ht',
-  'Germany':'de',
-  'France':'fr',
+  'DR Congo':'CD',
+  'Jordan':'JO',
+  'Sweden':'SE',
+  'Canada':'CA',
+  'Brazil':'BR',
+  'Haiti':'HT',
+  'Germany':'DE',
+  'France':'FR',
 
-  'Algeria':'dz',
-  'Argentina':'ar',
-  'Australia':'au',
-  'Austria':'at',
-  'Belgium':'be',
-  'Bosnia & Herzegovina':'ba',
-  'Cape Verde':'cv',
-  'Colombia':'co',
-  'Croatia':'hr',
-  'Curaçao':'cw',
-  'Czechia':'cz',
-  "Côte d'Ivoire":'ci',
-  'Ecuador':'ec',
-  'Egypt':'eg',
-  'Ghana':'gh',
-  'Iran':'ir',
-  'Iraq':'iq',
-  'Japan':'jp',
-  'Mexico':'mx',
-  'Morocco':'ma',
-  'Netherlands':'nl',
-  'New Zealand':'nz',
-  'Norway':'no',
-  'Panama':'pa',
-  'Paraguay':'py',
-  'Portugal':'pt',
-  'Qatar':'qa',
-  'Saudi Arabia':'sa',
-  'Senegal':'sn',
-  'South Africa':'za',
-  'South Korea':'kr',
-  'Spain':'es',
-  'Switzerland':'ch',
-  'Tunisia':'tn',
-  'Türkiye':'tr',
-  'United States':'us',
-  'Uruguay':'uy',
-  'Uzbekistan':'uz'
+  'Algeria':'DZ',
+  'Argentina':'AR',
+  'Australia':'AU',
+  'Austria':'AT',
+  'Belgium':'BE',
+  'Bosnia & Herzegovina':'BA',
+  'Cape Verde':'CV',
+  'Colombia':'CO',
+  'Croatia':'HR',
+  'Curaçao':'CW',
+  'Czechia':'CZ',
+  "Côte d'Ivoire":'CI',
+  'Ecuador':'EC',
+  'Egypt':'EG',
+  'Ghana':'GH',
+  'Iran':'IR',
+  'Iraq':'IQ',
+  'Japan':'JP',
+  'Mexico':'MX',
+  'Morocco':'MA',
+  'Netherlands':'NL',
+  'New Zealand':'NZ',
+  'Norway':'NO',
+  'Panama':'PA',
+  'Paraguay':'PY',
+  'Portugal':'PT',
+  'Qatar':'QA',
+  'Saudi Arabia':'SA',
+  'Senegal':'SN',
+  'South Africa':'ZA',
+  'South Korea':'KR',
+  'Spain':'ES',
+  'Switzerland':'CH',
+  'Tunisia':'TN',
+  'Türkiye':'TR',
+  'United States':'US',
+  'Uruguay':'UY',
+  'Uzbekistan':'UZ'
 };
-
 
 function normalizeTeamName(t){
   t = String(t || '').trim();
@@ -571,18 +568,24 @@ function normalizeTeamName(t){
 
   if (mappings[t]) return mappings[t];
 
-  // If a value arrives as "XX Team Name", strip XX only when Team Name exists in FLAGS.
   const withoutPrefix = t.replace(/^[A-Z]{2}\s+/, '').trim();
   if (FLAGS[withoutPrefix]) return withoutPrefix;
 
   return t;
 }
 
+function codeToFlagEmoji(code){
+  if(!code || code.length !== 2) return '';
+  return code
+    .toUpperCase()
+    .replace(/./g, char => String.fromCodePoint(127397 + char.charCodeAt(0)));
+}
+
 function flag(t){
   const name = normalizeTeamName(t);
   const code = FLAGS[name];
   if (!code) return '';
-  return `<img class="flag-img" src="https://flagcdn.com/24x18/${code}.png" srcset="https://flagcdn.com/48x36/${code}.png 2x" alt="${name} flag" loading="lazy">`;
+  return `<span class="flag-emoji" aria-label="${name} flag">${codeToFlagEmoji(code)}</span>`;
 }
 
 

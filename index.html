@@ -752,6 +752,28 @@ label,
   }
 }
 
+
+/* Make unselected pick number tiles consistent */
+.team-row.rank-1 .rank-badge,
+.team-row.rank-2 .rank-badge,
+.team-row.rank-3 .rank-badge,
+.team-row.rank-4 .rank-badge {
+  border-color: var(--border) !important;
+  background: rgba(255,255,255,0.05) !important;
+}
+.team-row.rank-1 .rank-badge .rn {
+  color: var(--text) !important;
+}
+
+/* Highlight a row only after a team has been selected */
+.team-row.has-pick .rank-badge {
+  border-color: rgba(240,192,64,0.32) !important;
+  background: rgba(240,192,64,0.07) !important;
+}
+.team-row.has-pick .rank-badge .rn {
+  color: var(--gold) !important;
+}
+
 </style>
 </head>
 <body>
@@ -1020,6 +1042,8 @@ function onPick() {
         return `<option value="${t}"${t===cur?' selected':''}>${t}</option>`;
       }).join('');
     s.className = cur ? 'picked' : '';
+    const row = s.closest('.team-row');
+    if (row) row.classList.toggle('has-pick', Boolean(cur));
   }
   const count = sel.filter(Boolean).length;
   document.getElementById('progressCount').textContent = `${count} / 8`;

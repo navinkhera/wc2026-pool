@@ -915,6 +915,34 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
   }
 }
 
+
+/* Bigger labels in Still Alive / Eliminated stat boxes */
+.stat-card.alive-stat .sc-label,
+.stat-card.elim-stat .sc-label {
+  font-size: 0.7rem !important;
+  letter-spacing: 0.12em !important;
+}
+
+.stat-card.alive-stat .sc-sub,
+.stat-card.elim-stat .sc-sub {
+  font-size: 0.82rem !important;
+  line-height: 1.25 !important;
+}
+
+@media(max-width:640px){
+  .summary-strip .stat-card.alive-stat .sc-label,
+  .summary-strip .stat-card.elim-stat .sc-label {
+    font-size: 0.46rem !important;
+    letter-spacing: 0.05em !important;
+  }
+
+  .summary-strip .stat-card.alive-stat .sc-sub,
+  .summary-strip .stat-card.elim-stat .sc-sub {
+    font-size: 0.5rem !important;
+    line-height: 1.15 !important;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -966,12 +994,12 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
     <div class="stat-card alive-stat">
       <div class="sc-label">🔥 Still Alive</div>
       <div class="sc-value" id="statAlive">—</div>
-      <div class="sc-sub" id="statAliveSub">can still win</div>
+      <div class="sc-sub" id="statAliveSub">Can still win</div>
     </div>
     <div class="stat-card elim-stat">
       <div class="sc-label">💀 Eliminated</div>
       <div class="sc-value" id="statElim">—</div>
-      <div class="sc-sub">mathematically out</div>
+      <div class="sc-sub">Mathematically out</div>
     </div>
   </div>
 </div>
@@ -1311,7 +1339,7 @@ function renderStats(entries){
   setText('statEntries', entries.length);
   setText('statPaid', `${paid} paid · ${entries.length-paid} pending`);
   setText('statAlive', alive);
-  setText('statAliveSub', alive===1?'only one left!':'can still win');
+  setText('statAliveSub', alive===1?'Only one left!':'Can still win');
   setText('statElim', elim);
 
   setText('prizeAmount', fmt(pot));

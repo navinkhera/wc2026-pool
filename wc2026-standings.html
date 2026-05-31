@@ -402,6 +402,70 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
   .gap-label{font-size:.58rem;margin-top:.05rem}
 }
 
+
+/* DESKTOP FLAG CLEANUP */
+@media(min-width:641px){
+  .team-tag.flag-only{
+    width:30px!important;
+    min-width:30px!important;
+    max-width:30px!important;
+    height:24px!important;
+    padding:0!important;
+    overflow:hidden!important;
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+  }
+  .team-tag.flag-only .flag-hybrid{
+    width:22px!important;
+    min-width:22px!important;
+    max-width:22px!important;
+    height:16px!important;
+    overflow:hidden!important;
+    display:inline-flex!important;
+  }
+  .team-tag.flag-only .flag-img{
+    display:block!important;
+    width:22px!important;
+    height:16px!important;
+    min-width:22px!important;
+    max-width:22px!important;
+  }
+  .team-tag.flag-only .flag-emoji,
+  .team-tag.flag-only .flag-fallback,
+  .team-tag.flag-only .team-name-text{
+    display:none!important;
+  }
+
+  .leader-flag{
+    width:30px!important;
+    min-width:30px!important;
+    max-width:30px!important;
+    height:24px!important;
+    padding:0!important;
+    overflow:hidden!important;
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+  }
+  .leader-flag .flag-hybrid{
+    width:22px!important;
+    min-width:22px!important;
+    max-width:22px!important;
+    height:16px!important;
+    overflow:hidden!important;
+  }
+  .leader-flag .flag-img{
+    display:block!important;
+    width:22px!important;
+    height:16px!important;
+  }
+  .leader-flag .flag-emoji,
+  .leader-flag .flag-fallback{
+    display:none!important;
+  }
+}
+
 </style>
 </head>
 <body>

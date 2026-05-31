@@ -291,16 +291,19 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
 }
 
 
+
 /* HYBRID FLAGS: image on desktop, emoji on mobile */
-.flag-hybrid{display:inline-flex;align-items:center;justify-content:center;line-height:1}
-.flag-img{width:18px;height:13px;object-fit:cover;border-radius:2px;box-shadow:0 0 0 1px rgba(255,255,255,0.15);flex-shrink:0}
-.flag-emoji{display:none;font-size:1.05rem;line-height:1}
-.team-tag.flag-only .flag-img{width:22px;height:16px}
-.leader-flag .flag-img{width:22px;height:16px}
+.flag-hybrid{display:inline-flex;align-items:center;justify-content:center;width:22px;height:16px;line-height:1;overflow:hidden}
+.flag-img{display:block;width:22px;height:16px;object-fit:cover;border-radius:2px;box-shadow:0 0 0 1px rgba(255,255,255,.15)}
+.flag-emoji{display:none}
+.team-tag.flag-only{width:30px;height:24px;padding:0;justify-content:center;gap:0;overflow:hidden}
+.team-tag.flag-only .team-name-text{display:none!important}
+.leader-flag{overflow:hidden}
 @media(max-width:640px){
-  .flag-img-desktop{display:none!important}
-  .flag-emoji-mobile{display:inline-flex!important;font-size:1.1rem}
-  .leader-flag .flag-emoji-mobile{font-size:1.15rem}
+  .flag-hybrid{width:auto;height:auto;overflow:visible}
+  .flag-img{display:none!important}
+  .flag-emoji{display:inline-flex!important;font-size:1.1rem;line-height:1}
+  .leader-flag .flag-emoji{font-size:1.1rem}
 }
 
 /* TEAMS */
@@ -355,6 +358,50 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
   .prize-right{display:none}
   .header{padding-top:2rem}
 }
+
+/* MOBILE UX REFINEMENTS */
+@media(max-width:640px){
+  .leader-card{padding:1rem}
+  .leader-stats{grid-template-columns:1fr 1fr}
+  .leader-stats>div{padding:.55rem .7rem}
+  .leader-stats span{font-size:1.45rem}
+
+  .filters{grid-template-columns:repeat(3,1fr);margin-bottom:.55rem}
+  .search-wrap{display:none}
+  body.has-many-entries .search-wrap{display:block;grid-column:1 / -1}
+
+  .entry-row{
+    padding:.85rem .9rem!important;
+    min-height:0;
+    display:grid!important;
+    grid-template-columns:auto 1fr auto;
+    grid-template-areas:
+      "icons name medal"
+      "teams teams teams"
+      "score score max";
+    gap:.55rem .75rem;
+    align-items:start;
+  }
+  .entry-row td{display:block!important;width:auto!important;padding:0!important}
+
+  .rank-cell{grid-area:medal!important;position:static!important;width:auto!important;text-align:right!important}
+  .status-cell{grid-area:icons!important;position:static!important;width:auto!important;text-align:left!important}
+  .name-cell{grid-area:name!important;padding-left:0!important;min-height:0!important;margin:0!important}
+  .teams-cell{grid-area:teams!important;margin:.15rem 0 .15rem!important;gap:.28rem!important}
+  .score-cell{grid-area:score!important;text-align:center!important;width:auto!important}
+  .potential-cell{grid-area:max!important;text-align:right!important;width:auto!important;align-self:center}
+
+  .status-icon{font-size:1.25rem}
+  .rank-num{width:30px;height:30px;font-size:1rem}
+  .entry-row .entry-name{font-size:1.25rem;line-height:1.08}
+  .entry-row .entry-id{font-size:.64rem;margin-top:.12rem}
+  .team-tag.flag-only{width:28px;height:22px}
+  .actual-score{font-size:1.55rem}
+  .potential-val{font-size:1.05rem}
+  .pts-label{font-size:.52rem}
+  .gap-label{font-size:.58rem;margin-top:.05rem}
+}
+
 </style>
 </head>
 <body>
@@ -602,9 +649,9 @@ function flag(t){
   const lower = code.toLowerCase();
   const emoji = codeToFlagEmoji(code);
 
-  return `<span class="flag-hybrid" aria-label="${name} flag">
-    <img class="flag-img flag-img-desktop" src="https://flagcdn.com/24x18/${lower}.png" srcset="https://flagcdn.com/48x36/${lower}.png 2x" alt="${name} flag" loading="lazy">
-    <span class="flag-emoji flag-emoji-mobile">${emoji}</span>
+  return `<span class="flag-hybrid" title="${name}">
+    <img class="flag-img" src="https://flagcdn.com/24x18/${lower}.png" srcset="https://flagcdn.com/48x36/${lower}.png 2x" alt="${name} flag" loading="lazy">
+    <span class="flag-emoji">${emoji}</span>
   </span>`;
 }
 
@@ -782,7 +829,7 @@ function renderTable(){
       const bongeTag = (isPick3rd && e.thirdPlaceBonus && !isElim)
         ? `<span class="bonus-badge">+4 🥉</span>` : '';
       return `<span class="team-tag flag-only ${cls}" title="Pick ${i+1}: ${displayTeam} · ${PTS[i]}pt/win${isElim?' · ELIMINATED':' · still in'}${isPick3rd?' · 3rd place bonus slot':''}">
-        ${flag(displayTeam) || `<span class="flag-fallback">${displayTeam.slice(0,2).toUpperCase()}</span>`}<span class="team-name-text">${displayTeam}</span></span>${bongeTag}`;
+        ${flag(displayTeam)}<span class="team-name-text">${displayTeam}</span></span>${bongeTag}`;
     }).join('');
 
     const gapText = e.isLeader
@@ -818,7 +865,8 @@ function setFilter(f,btn){
   currentFilter=f;
   document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active','active-alive'));
   btn.classList.add(f==='alive'?'active-alive':'active');
-  renderTable();
+  document.body.classList.toggle('has-many-entries', allEntries.length > 10);
+    renderTable();
 }
 
 

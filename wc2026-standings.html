@@ -590,6 +590,64 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
   }
 }
 
+
+/* MOBILE FINAL SIMPLIFICATION */
+@media(max-width:640px){
+  .filters{
+    display:block!important;
+    margin:.55rem 0 .65rem!important;
+  }
+  .filter-btn{
+    display:none!important;
+  }
+  .search-wrap{
+    display:block!important;
+    width:100%!important;
+    max-width:none!important;
+  }
+  .search-wrap input{
+    height:40px!important;
+    font-size:.8rem!important;
+  }
+
+  /* Show only Prize Pot, Still Alive, Eliminated on mobile */
+  .summary-strip{
+    display:grid!important;
+    grid-template-columns:repeat(3,1fr)!important;
+    gap:.35rem!important;
+    overflow:visible!important;
+  }
+  .summary-strip .stat-card:nth-child(2){
+    display:none!important;
+  }
+  .summary-strip .stat-card{
+    min-width:0!important;
+    padding:.5rem .35rem!important;
+    min-height:58px!important;
+  }
+  .summary-strip .sc-label{
+    font-size:.4rem!important;
+    letter-spacing:.06em!important;
+  }
+  .summary-strip .sc-value{
+    font-size:1.05rem!important;
+  }
+  .summary-strip .sc-sub{
+    font-size:.46rem!important;
+  }
+
+  .leader-card{
+    overflow:hidden!important;
+  }
+  .leader-stats{
+    width:100%;
+    grid-template-columns:1fr 1fr!important;
+  }
+  .leader-stats>div{
+    min-width:0!important;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -652,7 +710,6 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
 </div>
   
   <div class="filters">
-    <button class="filter-btn active" onclick="setFilter('all',this)">All entries</button>
     <div class="search-wrap">
       <input type="text" id="searchInput" placeholder="Search by name…" oninput="renderTable()">
     </div>

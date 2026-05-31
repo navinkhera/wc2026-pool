@@ -100,6 +100,15 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
 .leader-stats small{display:block;margin-top:.2rem;font-family:var(--mono);font-size:.56rem;color:var(--muted);text-transform:uppercase}
 @media(max-width:640px){.leader-stats>div{text-align:left}}
 
+.leader-flags{display:flex;flex-wrap:wrap;gap:.38rem;margin-top:.7rem}
+.leader-flag{display:inline-flex;align-items:center;justify-content:center;width:28px;height:22px;border-radius:6px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.10)}
+.leader-flag img{width:22px;height:16px;object-fit:cover;border-radius:2px;box-shadow:0 0 0 1px rgba(255,255,255,.12)}
+.leader-flag.elim{opacity:.35;filter:grayscale(1);text-decoration:line-through}
+.leader-card{position:relative;overflow:hidden}
+.leader-card::after{content:'';position:absolute;inset:auto -10% -65% -10%;height:120%;background:radial-gradient(ellipse at center,rgba(240,192,64,.12),transparent 60%);pointer-events:none}
+.leader-main{position:relative;z-index:1}
+
+
 /* FILTERS */
 .filters{display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1.25rem;animation:fadeUp 0.7s 0.25s ease both}
 .filter-btn{background:var(--s0);border:1px solid var(--border);color:var(--muted);border-radius:8px;
@@ -292,6 +301,7 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
       <div>
         <div class="leader-name" id="leaderName">—</div>
         <div class="leader-entry" id="leaderMeta">—</div>
+        <div class="leader-flags" id="leaderFlags"></div>
       </div>
       <div class="leader-stats">
         <div><span id="leaderScore">—</span><small>pts</small></div>
@@ -467,10 +477,12 @@ function computeAlive(entries){
 function updateLeaderCard(entries){
   const withAlive = computeAlive(entries || []);
   const leader = withAlive[0];
+
   const nameEl = document.getElementById('leaderName');
   const metaEl = document.getElementById('leaderMeta');
   const scoreEl = document.getElementById('leaderScore');
   const potentialEl = document.getElementById('leaderPotential');
+  const flagsEl = document.getElementById('leaderFlags');
 
   if(!nameEl || !metaEl || !scoreEl || !potentialEl) return;
 
@@ -479,6 +491,7 @@ function updateLeaderCard(entries){
     metaEl.textContent = 'No entries yet';
     scoreEl.textContent = '—';
     potentialEl.textContent = '—';
+    if(flagsEl) flagsEl.innerHTML = '';
     return;
   }
 
@@ -490,6 +503,15 @@ function updateLeaderCard(entries){
   metaEl.textContent = `Entry #${leader.entryNum || '—'} • ${aliveTeams}/${totalTeams} teams alive`;
   scoreEl.textContent = leader.score ?? '—';
   potentialEl.textContent = leader.potential ?? '—';
+
+  if(flagsEl){
+    flagsEl.innerHTML = (leader.teams || []).map(team => {
+      const clean = String(team || '').trim();
+      const isElim = eliminated.has(clean);
+      const f = flag(clean);
+      return `<span class="leader-flag ${isElim ? 'elim' : ''}" title="${clean}${isElim ? ' — eliminated' : ''}">${f || clean.slice(0,2)}</span>`;
+    }).join('');
+  }
 }
 
 function renderStats(entries){

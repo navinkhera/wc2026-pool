@@ -993,6 +993,13 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
   color: rgba(238,244,240,0.68) !important;
 }
 
+
+/* Pick #3 in the 3rd-place match remains visually alive */
+.team-tag.third-place-eligible {
+  border-color: rgba(205,140,82,0.55) !important;
+  box-shadow: 0 0 0 1px rgba(205,140,82,0.12);
+}
+
 </style>
 </head>
 <body>
@@ -1224,6 +1231,30 @@ function normalizeTeamName(t){
   return t;
 }
 
+
+function isThirdPlaceGameTeam(team){
+  const clean = normalizeTeamName(team);
+  return thirdPlaceGameTeams
+    .map(t => normalizeTeamName(t))
+    .filter(Boolean)
+    .includes(clean);
+}
+
+function shouldGreyTeam(team, pickIndex, elimTeams){
+  const clean = normalizeTeamName(team);
+  const eliminated = (elimTeams || []).map(t => normalizeTeamName(t)).includes(clean);
+
+  // Special rule:
+  // Pick #3 can still score in the 3rd-place match.
+  // If Pick #3 is one of the two 3rd-place teams from the Standings tab,
+  // keep the flag visually alive even if that team is otherwise eliminated.
+  if (pickIndex === 2 && eliminated && isThirdPlaceGameTeam(clean)) {
+    return false;
+  }
+
+  return eliminated;
+}
+
 function codeToFlagEmoji(code){
   if(!code) return '';
   if(code === 'GB-ENG') return '🇬🇧';
@@ -1263,6 +1294,7 @@ const PTS = [10,9,8,8,6,4,2,1];
 
 let allEntries = [];
 let currentFilter = 'all';
+let thirdPlaceGameTeams = [];
 
 // ── DEMO DATA ─────────────────────────────────────────────────────────────────
 const DEMO = [
@@ -1368,9 +1400,11 @@ function updateLeaderCard(entries){
   if(flagsEl){
     flagsEl.innerHTML = (leader.teams || []).map(team => {
       const clean = normalizeTeamName(team);
-      const isElim = eliminated.has(clean);
+      const pickIndex = (leader.teams || []).indexOf(team);
+      const isElim = shouldGreyTeam(clean, pickIndex, leader.elimTeams || []);
       const f = flag(clean);
-      return `<span class="leader-flag ${isElim ? 'elim' : ''}" title="${clean}${isElim ? ' — eliminated' : ''}">${f || `<span class="flag-fallback">${clean.slice(0,2).toUpperCase()}</span>`}</span>`;
+      const titleSuffix = isElim ? ' — eliminated' : (pickIndex === 2 && isThirdPlaceGameTeam(clean) ? ' — 3rd-place match' : '');
+      return `<span class="leader-flag ${isElim ? 'elim' : ''}" title="${clean}${titleSuffix}">${f || `<span class="flag-fallback">${clean.slice(0,2).toUpperCase()}</span>`}</span>`;
     }).join('');
   }
 }
@@ -1431,12 +1465,13 @@ function renderTable(){
 
     const teamTags = e.teams.map((t,i)=>{
       const displayTeam = normalizeTeamName(t);
-      const isElim = e.elimTeams?.map(x => normalizeTeamName(x)).includes(displayTeam);
+      const isElim = shouldGreyTeam(displayTeam, i, e.elimTeams || []);
       const isPick1 = i===0;
       const isPick3rd = i===2; // slot 3 = index 2 = 3rd place bonus slot
       let cls = isElim ? 'elim-team' : 'still-in';
       if(!isElim && isPick1) cls = 'pick1';
       if(!isElim && isPick3rd && !isPick1) cls += ' pick3rd';
+      if(isPick3rd && isThirdPlaceGameTeam(displayTeam)) cls += ' third-place-eligible';
       const bongeTag = (isPick3rd && e.thirdPlaceBonus && !isElim)
         ? `<span class="bonus-badge">+4 🥉</span>` : '';
       return `<span class="team-tag flag-only ${cls}" title="Pick ${i+1}: ${displayTeam} · ${PTS[i]}pt/win${isElim?' · ELIMINATED':' · still in'}${isPick3rd?' · 3rd place bonus slot':''}">
@@ -1619,6 +1654,8 @@ async function loadData(){
       const mathElimText = cellByHeader(c, headers, ['MathElim', 'Math Elim', 'Mathematically Eliminated'], 7);
       const paidText = cellByHeader(c, headers, ['Paid', 'Payment Status'], -1);
       const resultsUpdated = cellByHeader(c, headers, ['Results Updated', 'Last Results Update'], -1);
+      const thirdPlaceTeam1 = cellByHeader(c, headers, ['3rdplaceteam1', '3rd place team 1', 'ThirdPlaceTeam1'], -1);
+      const thirdPlaceTeam2 = cellByHeader(c, headers, ['3rdplaceteam2', '3rd place team 2', 'ThirdPlaceTeam2'], -1);
 
       return {
         name,
@@ -1632,10 +1669,17 @@ async function loadData(){
         thirdPlaceWinner: '',
         thirdPlaceBonus: false,
         resultsUpdated,
+        thirdPlaceTeam1,
+        thirdPlaceTeam2,
       };
     }).filter(e => e.name);
 
     const resultsUpdated = allEntries.find(e => e.resultsUpdated)?.resultsUpdated || '';
+    thirdPlaceGameTeams = [
+      allEntries.find(e => e.thirdPlaceTeam1)?.thirdPlaceTeam1 || '',
+      allEntries.find(e => e.thirdPlaceTeam2)?.thirdPlaceTeam2 || ''
+    ].filter(Boolean);
+
     document.getElementById('lastUpdatedTime').textContent =
       resultsUpdated || 'Not set';
 

@@ -1051,6 +1051,64 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
   }
 }
 
+
+/* Final filter polish */
+@media(max-width:640px){
+  .summary-strip .stat-card.gold .sc-label,
+  .summary-strip .stat-card.gold .sc-sub {
+    font-size: inherit !important;
+  }
+
+  .summary-strip .stat-card.gold .sc-label {
+    font-size: .46rem !important;
+    letter-spacing: .05em !important;
+  }
+
+  .summary-strip .stat-card.gold .sc-sub {
+    font-size: .5rem !important;
+    line-height: 1.15 !important;
+  }
+}
+
+@media(min-width:641px){
+  /* Avoid duplicate entry counts on desktop: keep the filter button, hide the Total Entries card */
+  .summary-strip .stat-filter-card[data-filter="all"] {
+    display: none !important;
+  }
+
+  .summary-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .desktop-filter {
+    gap: .35rem;
+    border-radius: 999px !important;
+    padding: .5rem .95rem !important;
+    min-width: auto !important;
+  }
+
+  .desktop-filter[data-filter="all"].active,
+  .desktop-filter[data-filter="all"]:hover {
+    background: rgba(240,192,64,0.12);
+    border-color: rgba(240,192,64,0.42);
+    color: var(--gold);
+  }
+
+  .desktop-filter[data-filter="alive"].active-alive,
+  .desktop-filter[data-filter="alive"]:hover {
+    background: rgba(56,230,120,0.10);
+    border-color: rgba(56,230,120,0.35);
+    color: var(--alive-color);
+  }
+
+  .desktop-filter[data-filter="elim"].active,
+  .desktop-filter[data-filter="elim"]:hover {
+    background: rgba(255,112,112,0.10);
+    border-color: rgba(255,112,112,0.35);
+    color: #ff7070;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -1116,9 +1174,9 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
     <div class="search-wrap">
       <input type="text" id="searchInput" placeholder="Search by name…" oninput="renderTable()">
     </div>
-    <button class="filter-btn desktop-filter active" data-filter="all" onclick="setFilter('all',this)">All</button>
-    <button class="filter-btn desktop-filter" data-filter="alive" onclick="setFilter('alive',this)">Alive</button>
-    <button class="filter-btn desktop-filter" data-filter="elim" onclick="setFilter('elim',this)">Eliminated</button>
+    <button class="filter-btn desktop-filter active" data-filter="all" onclick="setFilter('all',this)">👥 All</button>
+    <button class="filter-btn desktop-filter" data-filter="alive" onclick="setFilter('alive',this)">🔥 Alive</button>
+    <button class="filter-btn desktop-filter" data-filter="elim" onclick="setFilter('elim',this)">💀 Eliminated</button>
   </div>
 
   <div class="standings-wrap">

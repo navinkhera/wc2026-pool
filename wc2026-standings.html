@@ -1132,6 +1132,18 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
   text-decoration: none !important;
 }
 
+
+/* Desktop only: hide duplicate Entries card and keep 3 summary cards in one row */
+@media(min-width:641px){
+  .summary-strip .stat-card:nth-child(2){
+    display:none!important;
+  }
+
+  .summary-strip{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  }
+}
+
 </style>
 </head>
 <body>

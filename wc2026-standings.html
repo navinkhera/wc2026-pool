@@ -111,7 +111,7 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
 .leader-flags{display:flex;flex-wrap:wrap;gap:.38rem;margin-top:.7rem}
 .leader-flag{display:inline-flex;align-items:center;justify-content:center;width:28px;height:22px;border-radius:6px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.10)}
 .leader-flag .flag-emoji{font-size:1.05rem}
-.leader-flag.elim{opacity:.35;filter:grayscale(1);text-decoration:line-through}
+.leader-flag.elim{opacity:.35;filter:grayscale(1);text-decoration:none}
 .leader-card{position:relative;overflow:hidden}
 .leader-card::after{content:'';position:absolute;inset:auto -10% -65% -10%;height:120%;background:radial-gradient(ellipse at center,rgba(240,192,64,.12),transparent 60%);pointer-events:none}
 .leader-main{position:relative;z-index:1}
@@ -342,7 +342,7 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
 .team-tag:hover{background:var(--s2)}
 .team-tag .tf{font-size:0.85em;line-height:1}
 .flag-emoji{font-size:1.05rem;line-height:1;display:inline-flex;align-items:center;justify-content:center}.flag-fallback{font-family:var(--mono);font-size:.58rem;color:var(--gold)}
-.team-tag.elim-team{text-decoration:line-through;opacity:0.38}
+.team-tag.elim-team{text-decoration:none;opacity:0.38}
 .team-tag.still-in{border-color:rgba(56,230,120,0.28);color:rgba(200,255,220,0.85)}
 .team-tag.pick1{border-color:rgba(240,192,64,0.38);color:var(--gold)}
 .team-tag.pick3rd{border-color:rgba(205,140,82,0.4);color:var(--bronze)}
@@ -1109,6 +1109,29 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
   }
 }
 
+
+/* Desktop summary cards: show all three in one row */
+@media(min-width:641px){
+  .summary-strip .stat-filter-card[data-filter="all"] {
+    display: block !important;
+  }
+
+  .summary-strip {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}
+
+/* Hide leader meta line after removing teams-alive text */
+.leader-entry {
+  display: none !important;
+}
+
+/* No strikethrough on eliminated country flags */
+.team-tag.elim-team,
+.leader-flag.elim {
+  text-decoration: none !important;
+}
+
 </style>
 </head>
 <body>
@@ -1505,7 +1528,7 @@ function updateLeaderCard(entries){
   const totalTeams = (leader.teams || []).length;
 
   nameEl.textContent = leader.name || '—';
-  metaEl.textContent = `${aliveTeams}/${totalTeams} teams alive`;
+  metaEl.textContent = '';
   scoreEl.textContent = leader.score ?? '—';
   potentialEl.textContent = leader.potential ?? '—';
 

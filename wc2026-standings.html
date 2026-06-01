@@ -362,7 +362,7 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
 .potential-cell{text-align:right;white-space:nowrap}
 .potential-val{font-family:var(--mono);font-size:0.85rem}
 .is-alive .potential-val{color:var(--alive-color)}
-.is-elim .potential-val{color:var(--muted);text-decoration:line-through}
+.is-elim .potential-val{color:var(--muted)}
 
 /* 3RD PLACE BONUS BADGE */
 .bonus-badge{display:inline-flex;align-items:center;gap:0.2rem;
@@ -943,6 +943,17 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
   }
 }
 
+
+/* Clearer eliminated max/best-possible wording */
+.is-elim .potential-val {
+  text-decoration: none !important;
+}
+
+.is-elim .potential-cell .gap-label.too-far {
+  color: rgba(238,244,240,0.68) !important;
+  line-height: 1.25;
+}
+
 </style>
 </head>
 <body>
@@ -1397,11 +1408,11 @@ function renderTable(){
       ? `<div class="gap-label leading">▲ Leading</div>`
       : e.isAlive
         ? `<div class="gap-label closeable">needs +${e.gap} to lead</div>`
-        : `<div class="gap-label too-far">out by ${Math.abs(e.needed)}</div>`;
+        : `<div class="gap-label too-far">Eliminated</div>`;
 
     const potDisplay = e.isAlive
       ? `<div class="potential-val">${e.potential}</div><div class="gap-label closeable" style="text-align:right">max</div>`
-      : `<div class="potential-val">${e.potential}</div><div class="gap-label too-far" style="text-align:right">max reached</div>`;
+      : `<div class="potential-val">${e.potential}</div><div class="gap-label too-far" style="text-align:right">best possible</div><div class="gap-label too-far" style="text-align:right">${Math.abs(e.needed)} behind leader • Eliminated</div>`;
 
     return `
     <tr class="entry-row ${rc} ${stateClass}" style="animation-delay:${idx*0.035}s">

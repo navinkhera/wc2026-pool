@@ -954,6 +954,31 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
   line-height: 1.25;
 }
 
+
+/* Best possible / eliminated wording cleanup */
+.mobile-elim-label {
+  display: none;
+}
+
+@media(max-width:640px){
+  .potential-cell .gap-label.closeable {
+    font-size: .48rem !important;
+    line-height: 1.1 !important;
+  }
+
+  .is-elim .desktop-elim-detail {
+    display: none !important;
+  }
+
+  .is-elim .mobile-elim-label {
+    display: block !important;
+    color: rgba(238,244,240,0.68) !important;
+    font-size: .58rem !important;
+    line-height: 1.15 !important;
+    margin-top: .12rem !important;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -984,7 +1009,7 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
       </div>
       <div class="leader-stats">
         <div><span id="leaderScore">—</span><small>pts</small></div>
-        <div><span id="leaderPotential">—</span><small>max</small></div>
+        <div><span id="leaderPotential">—</span><small>best possible</small></div>
       </div>
     </div>
   </div>
@@ -1030,7 +1055,7 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
           <th>Entrant</th>
           <th>Teams</th>
           <th class="num">Score</th>
-          <th class="num">Max</th>
+          <th class="num">Best Possible</th>
         </tr>
       </thead>
       <tbody id="standingsBody"></tbody>
@@ -1411,8 +1436,8 @@ function renderTable(){
         : `<div class="gap-label too-far">Eliminated</div>`;
 
     const potDisplay = e.isAlive
-      ? `<div class="potential-val">${e.potential}</div><div class="gap-label closeable" style="text-align:right">max</div>`
-      : `<div class="potential-val">${e.potential}</div><div class="gap-label too-far" style="text-align:right">best possible</div><div class="gap-label too-far" style="text-align:right">${Math.abs(e.needed)} behind leader • Eliminated</div>`;
+      ? `<div class="potential-val">${e.potential}</div><div class="gap-label closeable" style="text-align:right">best possible</div>`
+      : `<div class="potential-val">${e.potential}</div><div class="gap-label too-far desktop-elim-detail" style="text-align:right">best possible</div><div class="gap-label too-far desktop-elim-detail" style="text-align:right">${Math.abs(e.needed)} behind leader • Eliminated</div><div class="gap-label too-far mobile-elim-label" style="text-align:right">Eliminated</div>`;
 
     return `
     <tr class="entry-row ${rc} ${stateClass}" style="animation-delay:${idx*0.035}s">

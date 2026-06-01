@@ -1000,6 +1000,57 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
   box-shadow: 0 0 0 1px rgba(205,140,82,0.12);
 }
 
+
+/* Summary cards as mobile filters + desktop filter buttons */
+.stat-filter-card {
+  cursor: pointer;
+  position: relative;
+}
+
+.stat-filter-card:hover {
+  background: var(--s1);
+}
+
+.stat-filter-card.active-filter {
+  border-color: rgba(240,192,64,0.55) !important;
+  box-shadow: 0 0 0 1px rgba(240,192,64,0.12), 0 0 18px rgba(240,192,64,0.06);
+}
+
+.stat-filter-card.active-filter::after {
+  content: 'Active';
+  position: absolute;
+  right: .55rem;
+  top: .45rem;
+  font-family: var(--mono);
+  font-size: .42rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--gold);
+  opacity: .9;
+}
+
+.desktop-filter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media(max-width:640px){
+  .desktop-filter {
+    display: none !important;
+  }
+
+  .stat-filter-card.active-filter::after {
+    display: none;
+  }
+}
+
+@media(min-width:641px){
+  .stat-filter-card {
+    cursor: default;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -1038,22 +1089,22 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
 
 
   <div class="stats-row summary-strip">
-    <div class="stat-card gold">
-      <div class="sc-label">🏆 Prize Pot</div>
-      <div class="sc-value" id="statPot">—</div>
-      <div class="sc-sub" id="statPotSub">—</div>
+    <div class="stat-card gold stat-filter-card active-filter" data-filter="all" onclick="setFilter('all')">
+      <div class="sc-label">👥 Total Entries</div>
+      <div class="sc-value" id="statEntriesAll">—</div>
+      <div class="sc-sub">Show all</div>
     </div>
     <div class="stat-card">
       <div class="sc-label">Entries</div>
       <div class="sc-value" id="statEntries">—</div>
       <div class="sc-sub" id="statPaid">—</div>
     </div>
-    <div class="stat-card alive-stat">
+    <div class="stat-card alive-stat stat-filter-card" data-filter="alive" onclick="setFilter('alive')">
       <div class="sc-label">🔥 Still Alive</div>
       <div class="sc-value" id="statAlive">—</div>
       <div class="sc-sub" id="statAliveSub">Can still win</div>
     </div>
-    <div class="stat-card elim-stat">
+    <div class="stat-card elim-stat stat-filter-card" data-filter="elim" onclick="setFilter('elim')">
       <div class="sc-label">💀 Eliminated</div>
       <div class="sc-value" id="statElim">—</div>
       <div class="sc-sub">Mathematically out</div>
@@ -1065,6 +1116,9 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
     <div class="search-wrap">
       <input type="text" id="searchInput" placeholder="Search by name…" oninput="renderTable()">
     </div>
+    <button class="filter-btn desktop-filter active" data-filter="all" onclick="setFilter('all',this)">All</button>
+    <button class="filter-btn desktop-filter" data-filter="alive" onclick="setFilter('alive',this)">Alive</button>
+    <button class="filter-btn desktop-filter" data-filter="elim" onclick="setFilter('elim',this)">Eliminated</button>
   </div>
 
   <div class="standings-wrap">
@@ -1418,8 +1472,7 @@ function renderStats(entries){
   const leader = withAlive[0];
   updateLeaderCard(entries);
 
-  setText('statPot', fmt(pot));
-  setText('statPotSub', `${paid} of ${entries.length} paid`);
+  setText('statEntriesAll', entries.length);
   setText('statEntries', entries.length);
   setText('statPaid', `${paid} paid · ${entries.length-paid} pending`);
   setText('statAlive', alive);
@@ -1508,10 +1561,23 @@ function renderTable(){
 
 function setFilter(f,btn){
   currentFilter=f;
+
   document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active','active-alive'));
-  btn.classList.add(f==='alive'?'active-alive':'active');
+  document.querySelectorAll('.stat-filter-card').forEach(c=>c.classList.remove('active-filter'));
+
+  document.querySelectorAll(`.filter-btn[data-filter="${f}"]`).forEach(b=>{
+    b.classList.add(f==='alive'?'active-alive':'active');
+  });
+  document.querySelectorAll(`.stat-filter-card[data-filter="${f}"]`).forEach(c=>{
+    c.classList.add('active-filter');
+  });
+
+  if(btn){
+    btn.classList.add(f==='alive'?'active-alive':'active');
+  }
+
   document.body.classList.toggle('has-many-entries', allEntries.length > 10);
-    renderTable();
+  renderTable();
 }
 
 

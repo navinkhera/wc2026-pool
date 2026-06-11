@@ -1144,6 +1144,29 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
   }
 }
 
+
+/* Loading / retry state */
+.loading-state {
+  display: none;
+  text-align: center;
+  padding: 2.5rem 1rem;
+  color: rgba(238,244,240,0.76);
+  font-family: var(--mono);
+  font-size: .82rem;
+  line-height: 1.7;
+}
+.loading-state.show { display: block; }
+.loading-spinner {
+  width: 28px;
+  height: 28px;
+  border: 2px solid rgba(238,244,240,0.18);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  margin: 0 auto .9rem;
+  animation: spinLoad .8s linear infinite;
+}
+@keyframes spinLoad { to { transform: rotate(360deg); } }
+
 </style>
 </head>
 <body>
@@ -1228,6 +1251,12 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;mi
       </thead>
       <tbody id="standingsBody"></tbody>
     </table>
+
+    <div class="loading-state show" id="loadingState">
+      <div class="loading-spinner"></div>
+      <div id="loadingText">Loading standings…</div>
+    </div>
+
     <div class="empty-state" id="emptyState">
       <div class="icon">🔍</div>
       <p>No entries match your filter.</p>
@@ -1441,6 +1470,8 @@ const PTS = [10,9,8,8,6,4,2,1];
 
 let allEntries = [];
 let currentFilter = 'all';
+let loadRetryCount = 0;
+const MAX_LOAD_RETRIES = 3;
 let thirdPlaceGameTeams = [];
 
 // ── DEMO DATA ─────────────────────────────────────────────────────────────────
@@ -1762,7 +1793,30 @@ function showLoadError(message, rawPreview){
 
 
 
+
+function setLoadingState(message, show=true){
+  const loading = document.getElementById('loadingState');
+  const loadingText = document.getElementById('loadingText');
+  if(loading) loading.classList.toggle('show', show);
+  if(loadingText && message) loadingText.textContent = message;
+}
+
+function scheduleLoadRetry(reason){
+  if(loadRetryCount >= MAX_LOAD_RETRIES){
+    setLoadingState('', false);
+    showLoadError('Could not load standings after several attempts. Please refresh the page in a moment.', '');
+    return;
+  }
+
+  loadRetryCount += 1;
+  const delay = loadRetryCount * 2500;
+  setLoadingState(`Still loading standings… retry ${loadRetryCount}/${MAX_LOAD_RETRIES}`, true);
+  setTimeout(loadData, delay);
+}
+
+
 async function loadData(){
+  if (!allEntries.length) setLoadingState('Loading standings…', true);
   if (STANDINGS_CSV_URL === 'YOUR_PUBLISHED_CSV_URL') {
     showLoadError('STANDINGS_CSV_URL is not configured.', '');
     return;
@@ -1785,19 +1839,19 @@ async function loadData(){
       allEntries = [];
       renderStats(allEntries);
       renderTable();
-      showLoadError('The published CSV is empty.', '');
+      scheduleLoadRetry('The published CSV is empty.');
       return;
     }
 
     if (trimmed.startsWith('<!DOCTYPE') || trimmed.startsWith('<html') || trimmed.includes('<title>')) {
-      showLoadError('The URL returned an HTML page, not CSV. Re-copy the Publish to web CSV link.', trimmed.slice(0, 600));
+      scheduleLoadRetry('The URL returned HTML instead of CSV.');
       return;
     }
 
     const rows = parseCSV(trimmed);
 
     if (!rows || rows.length < 2) {
-      showLoadError('CSV loaded, but there were no data rows after the header.', trimmed.slice(0, 600));
+      scheduleLoadRetry('CSV loaded, but no data rows were found.');
       return;
     }
 
@@ -1842,13 +1896,21 @@ async function loadData(){
     document.getElementById('lastUpdatedTime').textContent =
       resultsUpdated || 'Not set';
 
+    loadRetryCount = 0;
+    setLoadingState('', false);
     updateLeaderCard(allEntries);
     renderStats(allEntries);
     renderTable();
 
   } catch (err) {
     console.error('Load failed', err);
-    showLoadError(String(err.message || err), '');
+
+    if (allEntries.length) {
+      setLoadingState('', false);
+      return;
+    }
+
+    scheduleLoadRetry(String(err.message || err));
   }
 }
 

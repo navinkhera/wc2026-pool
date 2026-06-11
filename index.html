@@ -788,6 +788,90 @@ a[href^="tel"]:hover {
   color: #ffd76a !important;
 }
 
+
+
+/* Big closed-state card */
+.locked-banner {
+  display: none;
+  background: linear-gradient(135deg, rgba(240,192,64,0.16), rgba(224,48,48,0.10));
+  border: 1px solid rgba(240,192,64,0.38);
+  color: var(--text);
+  border-radius: 22px;
+  padding: 2rem 1.5rem;
+  margin: 0 0 1.25rem;
+  text-align: center;
+  box-shadow: 0 0 34px rgba(240,192,64,0.08);
+  animation: fadeUp 0.5s ease both;
+}
+
+.locked-card-inner {
+  max-width: 460px;
+  margin: 0 auto;
+}
+
+.locked-big-icon {
+  font-size: 3rem;
+  line-height: 1;
+  margin-bottom: .65rem;
+}
+
+.locked-title {
+  font-family: 'Anton', sans-serif;
+  font-size: clamp(2.6rem, 9vw, 4rem);
+  color: var(--gold);
+  line-height: .95;
+  letter-spacing: .04em;
+  margin-bottom: .75rem;
+}
+
+.locked-copy {
+  color: rgba(240,244,241,0.78);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.locked-copy strong {
+  color: var(--gold);
+}
+
+body.entries-locked .locked-banner {
+  display: block !important;
+}
+
+body.entries-locked .card,
+body.entries-locked .pick-preview,
+body.entries-locked .progress-wrap,
+body.entries-locked .submit-wrap {
+  opacity: .45;
+  filter: grayscale(.25);
+}
+
+body.entries-locked .submit-wrap {
+  opacity: .7;
+}
+
+body.entries-locked .submit-btn {
+  background: rgba(255,255,255,0.07) !important;
+  color: rgba(240,244,241,0.45) !important;
+  cursor: not-allowed !important;
+  box-shadow: none !important;
+}
+
+body.entries-locked input,
+body.entries-locked select {
+  pointer-events: none;
+  opacity: .65;
+}
+
+@media(max-width:480px){
+  .locked-banner {
+    padding: 1.65rem 1rem;
+  }
+  .locked-big-icon {
+    font-size: 2.6rem;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -827,6 +911,16 @@ a[href^="tel"]:hover {
     <div class="payment-note"><strong>Your entry is confirmed once payment is received.</strong></div>
   </div>
 
+
+  
+  <div class="locked-banner" id="lockedBanner">
+    <div class="locked-card-inner">
+      <div class="locked-big-icon">🔒</div>
+      <div class="locked-title">TOO LATE!</div>
+      <div class="locked-copy">The pool closed at <strong>12:00 CET on June 11</strong>.</div>
+      <div class="locked-copy">You'll have to wait until World Cup 2030 😄</div>
+    </div>
+  </div>
 
   <!-- RULES CARD -->
   <div class="rules-card">
@@ -943,6 +1037,20 @@ a[href^="tel"]:hover {
 <script>
 // ── CONFIG ────────────────────────────────────────────────────────────────────
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzyojXc1WRDQoikkCJD2Xxi4XuQb_d7ITGBMZZau4KhI-kGICkeaEo_byYDz8KRcUb3-Q/exec';
+
+const ENTRY_LOCK_DEADLINE = new Date('2026-06-11T12:00:00+02:00'); // 12:00 CET/CEST, June 11
+function entriesAreLocked() {
+  return new Date() >= ENTRY_LOCK_DEADLINE;
+}
+function applyEntryLockState() {
+  const locked = entriesAreLocked();
+  document.body.classList.toggle('entries-locked', locked);
+  const btn = document.getElementById('submitBtn');
+  if (btn && locked) {
+    btn.disabled = true;
+    btn.textContent = 'ENTRIES CLOSED';
+  }
+}
 // ─────────────────────────────────────────────────────────────────────────────
 
 const PTS = [10,9,8,8,6,4,2,1];
@@ -1083,6 +1191,14 @@ function validate() {
 }
 
 async function handleSubmit(e) {
+  if (entriesAreLocked()) {
+    const errEl = document.getElementById('errorMsg');
+    errEl.textContent = '🔒 Entries are closed. No new submissions can be accepted.';
+    errEl.style.display = 'block';
+    errEl.scrollIntoView({behavior:'smooth',block:'nearest'});
+    applyEntryLockState();
+    return;
+  }
   const err = validate();
   const errEl = document.getElementById('errorMsg');
   if (err) {
@@ -1152,7 +1268,7 @@ function resetForm() {
   document.getElementById('successOverlay').classList.remove('show');
   for (let i=0;i<8;i++) document.getElementById(`t${i}`).value='';
   onPick();
-  document.getElementById('submitBtn').disabled = false;
+  document.getElementById('submitBtn').disabled = entriesAreLocked();
   document.getElementById('spinner').style.display = 'none';
   window.scrollTo({top:0,behavior:'smooth'});
 }
@@ -1160,6 +1276,7 @@ function resetForm() {
 buildGrid();
 buildPreview();
 updatePreview();
+applyEntryLockState();
 </script>
 </body>
 </html>
